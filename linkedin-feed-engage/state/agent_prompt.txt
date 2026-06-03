@@ -1,0 +1,13 @@
+Publish-day feed engage — auto mode (no approval).
+
+Buffer post 6a19809c417d9b6a6a946636 is live (sent_at=2026-06-03T04:30:31.902Z).
+Your post: What separates good PMs from the ones teams actually trust?.
+
+Run linkedin-feed-engage end-to-end:
+1. Read ~/Projects/LinkedIn Automation/linkedin-feed-engage/SKILL.md and config.json (phase1_approval_limit=0).
+2. Confirm LinkedIn logged in at https://www.linkedin.com/feed/ — if /login or /checkpoint, stop and notify user.
+3. Load session file /Users/rawshn/Projects/LinkedIn Automation/linkedin-feed-engage/state/session-2026-06-03.json — continue until posted >= target (30) or 90 min elapsed.
+4. One top-level comment per distinct feed post; real @ mentions only (listbox chip workflow in SKILL §5).
+5. Pace 90–180s between comments. No links in comments.
+
+Do not ask for approval. Stop only on captcha, auth failure, or 4× same failure.

@@ -1,0 +1,19 @@
+{
+  "last_watch_at": "2026-06-03T06:02:58.316838+00:00",
+  "posts": {
+    "6a19809c417d9b6a6a946636": {
+      "campaign_id": "CON-138",
+      "golden_hour_ends_at": "2026-06-03T06:00:31.902000+00:00",
+      "sent_at": "2026-06-03T04:30:31.902Z",
+      "share_urn": null,
+      "title": "9 Surprising Things Top Product Managers Do Differently"
+    },
+    "6a1bfe9aefeb482ae3405f25": {
+      "campaign_id": "CON-139",
+      "golden_hour_ends_at": "2026-06-02T06:00:06.849000+00:00",
+      "sent_at": "2026-06-02T04:30:06.849Z",
+      "share_urn": "urn:li:share:7467432334162579456",
+      "title": "What I wire before asking AI to write a PRD"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "agent_prompt_file": "/Users/rawshn/Projects/LinkedIn Automation/linkedin-feed-engage/state/agent_prompt.txt",
+  "armed_at": "2026-06-03T04:34:07.896425+00:00",
+  "auto_mode": true,
+  "buffer_post_id": "6a19809c417d9b6a6a946636",
+  "buffer_sent_at": "2026-06-03T04:30:31.902Z",
+  "publish_title": "What separates good PMs from the ones teams actually trust?",
+  "session_file": "/Users/rawshn/Projects/LinkedIn Automation/linkedin-feed-engage/state/session-2026-06-03.json",
+  "status": "armed",
+  "target_comments": 30
+}

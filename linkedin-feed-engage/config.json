@@ -1,0 +1,59 @@
+{
+  "session_minutes": 30,
+  "target_comments": 30,
+  "min_delay_seconds": 45,
+  "max_delay_seconds": 60,
+  "phase1_approval_limit": 0,
+  "auto_mode": true,
+  "continuous_mode": true,
+  "no_batch_prompts": true,
+  "single_agent_only": true,
+  "trigger_on_buffer_sent": true,
+  "feed_url": "https://www.linkedin.com/feed/",
+  "login_url": "https://www.linkedin.com/login",
+  "niche_keywords": [
+    "product manager",
+    "product management",
+    "pm ",
+    "discovery",
+    "prioritization",
+    "roadmap",
+    "b2b saas",
+    "startup",
+    "founder",
+    "ship",
+    "workflow",
+    "agent",
+    "full-stack",
+    "unstop",
+    "india"
+  ],
+  "skip_keywords": [
+    "agree?",
+    "like if",
+    "comment below",
+    "repost if",
+    "hiring only",
+    "we're hiring",
+    "job opening",
+    "dm me for",
+    "follow for"
+  ],
+  "max_comment_chars": 900,
+  "ideal_comment_chars": 280,
+  "min_comment_chars": 120,
+  "refresh_feed_each_pick": false,
+  "scroll_main_each_pick": true,
+  "full_reload_every_n_picks": 8,
+  "max_post_age_hours": 12,
+  "require_verified_mention": true,
+  "prefer_engaged_posts": true,
+  "min_reactions_or_comments": 5,
+  "discovery_urls": {
+    "home_feed_top": "https://www.linkedin.com/feed/",
+    "content_search_past_week": "https://www.linkedin.com/search/results/content/?keywords=product%20management%20AI&datePosted=%22past-week%22"
+  },
+  "avoid_discovery": {
+    "sort_latest_past_24h": "zero-engagement fresh posts during golden hour only"
+  }
+}

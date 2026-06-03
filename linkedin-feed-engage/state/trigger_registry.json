@@ -1,0 +1,13 @@
+{
+  "last_arm_at": "2026-06-03T04:34:07.897501+00:00",
+  "triggered": {
+    "6a19809c417d9b6a6a946636": {
+      "armed_at": "2026-06-03T04:34:07.896425+00:00",
+      "session_file": "/Users/rawshn/Projects/LinkedIn Automation/linkedin-feed-engage/state/session-2026-06-03.json"
+    },
+    "6a1bfe9aefeb482ae3405f25": {
+      "armed_at": "2026-06-02T04:31:21.820373+00:00",
+      "session_file": "/Users/rawshn/Projects/LinkedIn Automation/linkedin-feed-engage/state/session-2026-06-02.json"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "campaign_id": "TEST-PIPELINE",
+  "buffer_post_id": "6a1947009bbd3a5cfa06add4",
+  "share_urn": "urn:li:share:7466433583725895680",
+  "gmail_since_hours": 24,
+  "auto_post": true,
+  "post_context": {
+    "title": "Pipeline fixed — Cursor → Buffer test",
+    "themes": [
+      "Automation pipelines need a smoke test before scheduling real content.",
+      "Golden hour replies should be substantive, not generic thank-yous."
+    ]
+  }
+}
