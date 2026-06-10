@@ -52,15 +52,17 @@ No Buffer toolkit in Composio.
 | Poll / video / Live | No | No | Manual LinkedIn UI |
 | Golden hour replies | N/A | Yes | `linkedin-golden-hour` + launchd |
 
-**Post-live sync:** `golden_hour.py sync-notion` — Notion update when Buffer **`get_post`** returns `status=sent` (same fields as Buffer MCP). In Cursor, use **`notion-update-page` from MCP response** directly when scheduling or when you call `get_post`.
+**Post-live sync:** `golden_hour.py cleanup-content-library` — Notion **Posted** when Buffer **`get_post`** returns `status=sent` (same fields as Buffer MCP). In Cursor, use **`notion-update-page` from MCP response** directly when scheduling or when you call `get_post`.
 
 ## Post-live sync
 
 ```bash
-python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py sync-notion [--dry-run]
+python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py cleanup-content-library [--dry-run]
 ```
 
-Legacy alias: `post_live_sync.py` → same command. Env: `NOTION_TOKEN` + `BUFFER_MCP_TOKEN`.
+Run at the start of every `linkedin-content-posting` session and on each `publish_day_watch` tick.
+
+Alias: `sync-notion` · wrapper: `post_live_sync.py`. Env: `NOTION_TOKEN` + `BUFFER_MCP_TOKEN` in `~/.zshrc` (integration token; same as Antigravity `~/.gemini/config/mcp_config.json` → `notion-mcp-server`).
 
 ## Posting slots (IST)
 

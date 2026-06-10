@@ -32,7 +32,7 @@ while (( SECONDS < deadline )); do
   SYNC_PY="$ROOT/linkedin-golden-hour/golden_hour.py"
   if [[ -f "$SYNC_PY" ]]; then
     log "notion sync from buffer get_post"
-    if python3 "$SYNC_PY" sync-notion >>"$LOG" 2>&1; then
+    if python3 "$SYNC_PY" cleanup-content-library >>"$LOG" 2>&1; then
       log "notion sync ok"
     else
       log "notion sync failed (see log)"

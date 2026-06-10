@@ -18,7 +18,12 @@ LIB_DIR = SKILL_DIR.parent / "lib"
 if str(LIB_DIR) not in sys.path:
     sys.path.insert(0, str(LIB_DIR))
 
-from notion_sync import collect_mappings, sync_notion_from_buffer_post  # noqa: E402
+from notion_sync import (  # noqa: E402
+    cleanup_content_library,
+    collect_mappings,
+    fetch_page_status,
+    sync_notion_from_buffer_post,
+)
 STATE_DIR = SKILL_DIR / "state"
 CAMPAIGNS_DIR = SKILL_DIR / "campaigns"
 CONFIG_PATH = SKILL_DIR / "config.json"
@@ -416,8 +421,16 @@ def sync_publish_state(campaign: dict[str, Any], state: dict[str, Any], dry_run:
     page_id = campaign.get("notion_page_id")
     if not page_id:
         return None
+    force = True
     try:
-        return sync_notion_from_buffer_post(post, notion_page_id=page_id, state=state, dry_run=dry_run)
+        if fetch_page_status(page_id) == "Posted":
+            force = False
+    except RuntimeError:
+        force = False
+    try:
+        return sync_notion_from_buffer_post(
+            post, notion_page_id=page_id, state=state, dry_run=dry_run, force=force
+        )
     except RuntimeError as exc:
         if "NOTION_TOKEN" in str(exc):
             print(f"[watch] Notion sync skipped (token not set): {exc}", file=__import__("sys").stderr)
@@ -564,27 +577,27 @@ def post_manual(campaign_id: str, commenter: str, comment_text: str, dry_run: bo
 
 
 def sync_notion(dry_run: bool = False) -> dict[str, Any]:
-    """For each tracked Buffer post, call get_post; when status=sent, update Notion."""
-    mappings = collect_mappings()
-    results: list[dict[str, Any]] = []
-    for post_id, page_id in sorted(mappings.items()):
-        post = buffer_get_post(post_id)
-        if not post:
-            results.append({"buffer_post_id": post_id, "notion_page_id": page_id, "skipped": "buffer_post_not_found"})
+    """Reconcile Content Library with Buffer sent posts; persist campaign state."""
+    out = cleanup_content_library(buffer_get_post, dry_run=dry_run)
+    for row in out.get("results", []):
+        post_id = row.get("buffer_post_id")
+        if not post_id:
             continue
         cid = campaign_id_for_buffer_post(post_id)
         manual = find_manual_campaign_for_post(post_id)
         if manual:
             cid = manual.get("campaign_id") or cid
         state = load_state(cid)
-        entry = sync_notion_from_buffer_post(post, notion_page_id=page_id, state=state, dry_run=dry_run)
-        if entry:
-            results.append(entry)
-            if not dry_run:
-                save_state(cid, state)
-        elif post.get("status") != "sent":
-            results.append({"buffer_post_id": post_id, "notion_page_id": page_id, "skipped": post.get("status")})
-    return {"mappings": len(mappings), "synced": len([r for r in results if r.get("synced_at") and not r.get("dry_run")]), "results": results}
+        if row.get("action") in ("marked_posted", "already_posted") and not dry_run:
+            state["notion_synced"] = True
+            state["notion_sync_at"] = row.get("synced_at")
+            if row.get("share_urn"):
+                state["share_urn"] = row["share_urn"]
+            if row.get("external_link"):
+                state["external_link"] = row["external_link"]
+            save_state(cid, state)
+    out["synced"] = out.get("marked_posted", 0)
+    return out
 
 
 def main() -> None:
@@ -600,14 +613,19 @@ def main() -> None:
     r.add_argument("--commenter", required=True)
     r.add_argument("--comment", required=True)
     r.add_argument("--dry-run", action="store_true")
-    s = sub.add_parser("sync-notion", help="Update Notion from Buffer get_post when status=sent")
+    s = sub.add_parser("sync-notion", help="Content Library cleanup: Buffer sent → Notion Posted")
     s.add_argument("--dry-run", action="store_true")
+    c = sub.add_parser(
+        "cleanup-content-library",
+        help="Reconcile Scheduled/Ready rows with Buffer (alias: sync-notion)",
+    )
+    c.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if args.cmd == "watch":
         out = watch(dry_run=args.dry_run)
     elif args.cmd == "tick":
         out = tick(args.campaign, dry_run=args.dry_run)
-    elif args.cmd == "sync-notion":
+    elif args.cmd in ("sync-notion", "cleanup-content-library"):
         out = sync_notion(dry_run=args.dry_run)
     else:
         out = post_manual(args.campaign, args.commenter, args.comment, dry_run=args.dry_run)

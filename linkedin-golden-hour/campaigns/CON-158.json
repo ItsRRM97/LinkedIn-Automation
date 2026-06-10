@@ -1,0 +1,19 @@
+{
+  "campaign_id": "CON-158",
+  "notion_page_id": "3743dffe-a139-816d-8fc3-ce5d9fb21638",
+  "buffer_post_id": "6a208146a89b34b77e0a3c95",
+  "golden_hour_start_ist": "2026-06-04T10:00:00+05:30",
+  "golden_hour_end_ist": "2026-06-04T11:30:00+05:30",
+  "gmail_since_hours": 3,
+  "auto_post": true,
+  "post_context": {
+    "title": "When I won't let AI draft the PRD",
+    "caption_hook": "Everyone wants AI to draft the PRD. Fewer teams ask when a human should still own it.",
+    "themes": [
+      "Political calls, tradeoffs, and risk need a human owner — not a polished AI paragraph.",
+      "AI helps when the decision is made; it hurts when it replaces tense conversations.",
+      "Pairs with CON-139: setup before AI vs sections you still write yourself."
+    ],
+    "cta_question": "What PRD section do you never outsource — and why?"
+  }
+}

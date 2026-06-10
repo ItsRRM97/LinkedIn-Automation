@@ -2,6 +2,18 @@
 
 Rule: `.cursor/rules/skill-self-improvement.mdc`
 
+## 2026-06-03 — Docs/paths polish (Projects root, cleanup CLI)
+
+- **Triggered:** User asked to apply optional repo polish after cleanup + NOTION_TOKEN setup.
+- **Learned:** Stale `~/LinkedIn Automation/` paths in skills; publish-day scripts now call `cleanup-content-library` by default.
+- **Skill updates:** README publish-day tick order; reference.md; golden-hour SKILL publish-day section; deprecated CON-138 launchd note.
+
+## 2026-06-03 — Content Library cleanup required every run
+
+- **Triggered:** User reported posted Buffer posts still showing `Scheduled` in Content Library; asked for cleanup on each skill run.
+- **Learned:** `sync-notion` only queried `Scheduled` (not `Ready`); launchd often lacks `NOTION_TOKEN` — Cursor must run cleanup via MCP when scheduling in chat.
+- **Skill updates:** § Content Library cleanup; checklist step 0; `lib/notion_sync.py` `cleanup_content_library()`; CLI `cleanup-content-library` alias.
+
 ## 2026-05-31 — CON-139 end-to-end (Tue 2 Jun text post)
 
 - **Triggered:** User asked for new post + full pipeline scheduled Tuesday.

@@ -11,6 +11,7 @@
   "skip_text_contains": [
     "Pipeline fixed",
     "Safe to delete",
-    "Zapier → Buffer works"
+    "Zapier → Buffer works",
+    "Zapier"
   ]
 }

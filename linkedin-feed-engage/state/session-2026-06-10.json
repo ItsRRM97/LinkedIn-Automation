@@ -1,0 +1,268 @@
+{
+  "approval_remaining": 0,
+  "blocker": null,
+  "blocker_detail": null,
+  "buffer_post_id": "6a20814777ddfd3ac88917f2",
+  "buffer_sent_at": "2026-06-10T04:30:05.895Z",
+  "comments": [
+    {
+      "author": "Lenny Rachitsky",
+      "comment": "Lenny Rachitsky — Fadell's three-generation frame is sharp. Orest's point on gen-three budgets hits home — I've seen enterprise onboarding killed right before unit economics clicked. What signals keep stakeholders patient through the business-fix phase?",
+      "posted_at": "2026-06-10T12:45:00+00:00",
+      "post_snippet_referenced": "three generations / gen-three budgets (weak anchor — generic closer)",
+      "question_target": "thread",
+      "slug": "lennyrachitsky",
+      "snippet": "Tony Fadell: Every new product needs three generations...",
+      "status": "posted",
+      "tagged": true
+    },
+    {
+      "author": "Janna Bastow",
+      "comment": "Janna Bastow — framing indispensability as judgment + context, not prompt tricks, lands hard. I've seen B2B teams automate specs but still stall on tradeoff calls. Where does that split show up for PMs on AI-heavy roadmaps?",
+      "posted_at": "2026-06-10T07:41:45+00:00",
+      "post_snippet_referenced": "webinar title only (weak — no body quote; generic platitudes)",
+      "question_target": "author",
+      "slug": "jannabastow",
+      "snippet": "[Webinar] How to Make Yourself Indispensable in the Face of AI",
+      "status": "posted",
+      "tagged": true
+    },
+    {
+      "author": "Roman Pichler",
+      "comment": "Roman Pichler — framing EQ as what AI can't replicate lands hard in enterprise B2B, where stakeholder alignment breaks before the roadmap does. Mariusz's point on scaling AI-driven experiences assumes teams already have empathy muscle — where does that gap show up earliest in onboarding?",
+      "posted_at": "2026-06-10T07:48:00+00:00",
+      "post_snippet_referenced": "EQ as what AI can't replicate (weak — enterprise B2B/onboarding bleed; not Roman's phrase)",
+      "question_target": "thread",
+      "slug": "romanpichler",
+      "snippet": "Emotional Intelligence for Product Managers: The Key Capability AI Can't Replicate",
+      "status": "posted",
+      "tagged": true,
+      "relevance_note": "pre-fix generic — fails interchangeability test"
+    },
+    {
+      "author": "Teresa Torres",
+      "comment": "Teresa Torres — small, intentional groups as an underused learning model is the line I'd bet on over org-wide training. For product trios, when does train-everyone-at-once actually win?",
+      "posted_at": "2026-06-10T07:52:00+00:00",
+      "post_snippet_referenced": "small, intentional groups as a powerful (and underused) learning model",
+      "question_target": "author",
+      "slug": "teresatorres",
+      "snippet": "Learning Together — train everyone at once vs self-direct vs small groups",
+      "status": "posted",
+      "tagged": true
+    }
+  ],
+  "completed_at": null,
+  "targeting_override": "high_engagement_max_24h",
+  "last_checked_leader": "nikhyl",
+  "next_leader": "scottbelsky",
+  "phase": "auto",
+  "posted": 4,
+  "publish_title": "Enterprise integrations don't fail on APIs. They fail in week one when nobody agrees what \"done\" means.",
+  "resumed_at": "2026-06-10T14:00:00+00:00",
+  "roster_fixes": [
+    {
+      "fixed_at": "2026-06-10T12:00:00+00:00",
+      "name": "Marty Cagan",
+      "new_slug": "cagan",
+      "old_slug": "marty-cagan",
+      "reason": "profile_404"
+    },
+    {
+      "fixed_at": "2026-06-10T14:00:00+00:00",
+      "name": "Aakash Gupta",
+      "new_slug": "aagupta",
+      "old_slug": "aakashg0",
+      "reason": "profile_404"
+    },
+    {
+      "fixed_at": "2026-06-10T14:00:00+00:00",
+      "name": "Hiten Shah",
+      "new_slug": "hnshah",
+      "old_slug": "hitenism",
+      "reason": "profile_404"
+    },
+    {
+      "fixed_at": "2026-06-10T14:00:00+00:00",
+      "name": "Fareed Mosavat",
+      "new_slug": "fareed",
+      "old_slug": "fareedmosavat",
+      "reason": "profile_404"
+    },
+    {
+      "fixed_at": "2026-06-10T14:00:00+00:00",
+      "name": "John Cutler",
+      "new_slug": "johnpcutler",
+      "old_slug": "johncutlerdept",
+      "reason": "profile_404"
+    },
+    {
+      "fixed_at": "2026-06-10T14:00:00+00:00",
+      "name": "Dan Olsen",
+      "new_slug": "danolsen98",
+      "old_slug": "danolsen",
+      "reason": "profile_404"
+    },
+    {
+      "fixed_at": "2026-06-10T14:00:00+00:00",
+      "name": "Petra Wille",
+      "new_slug": "petra-wille-b8b1329",
+      "old_slug": "petrawille",
+      "reason": "profile_404"
+    },
+    {
+      "fixed_at": "2026-06-10T14:00:00+00:00",
+      "name": "Melissa Perri",
+      "new_slug": "melissajeanperri",
+      "old_slug": "melissaperri",
+      "reason": "wrong_profile"
+    }
+  ],
+  "skip_log": [
+    {
+      "at": "2026-06-10T06:24:00+00:00",
+      "author": "Marty Cagan",
+      "reason": "profile_404",
+      "slug": "marty-cagan"
+    },
+    {
+      "at": "2026-06-10T06:26:00+00:00",
+      "author": "Teresa Torres",
+      "detail": "newest post 13h ago",
+      "reason": "no_post_within_12h",
+      "slug": "teresatorres"
+    },
+    {
+      "at": "2026-06-10T13:00:00+00:00",
+      "author": "Shreyas Doshi",
+      "detail": "newest post 1d ago",
+      "reason": "no_post_within_12h",
+      "slug": "shreyasdoshi"
+    },
+    {
+      "at": "2026-06-10T13:01:00+00:00",
+      "author": "Gibson Biddle",
+      "detail": "newest post 1mo ago",
+      "reason": "no_post_within_12h",
+      "slug": "gibsonbiddle"
+    },
+    {
+      "at": "2026-06-10T13:02:00+00:00",
+      "author": "April Dunford",
+      "detail": "newest post 2w ago",
+      "reason": "no_post_within_12h",
+      "slug": "aprildunford"
+    },
+    {
+      "at": "2026-06-10T13:03:00+00:00",
+      "author": "Aakash Gupta",
+      "reason": "profile_404",
+      "slug": "aakashg0"
+    },
+    {
+      "at": "2026-06-10T13:04:00+00:00",
+      "author": "Elena Verna",
+      "detail": "newest post 17h ago",
+      "reason": "no_post_within_12h",
+      "slug": "elenaverna"
+    },
+    {
+      "at": "2026-06-10T13:05:00+00:00",
+      "author": "Wes Kao",
+      "detail": "no original posts; reposts 3w+",
+      "reason": "no_post_within_12h",
+      "slug": "weskao"
+    },
+    {
+      "at": "2026-06-10T13:06:00+00:00",
+      "author": "Melissa Perri",
+      "detail": "slug resolves to wrong profile (PR leader)",
+      "reason": "wrong_profile",
+      "slug": "melissaperri"
+    },
+    {
+      "at": "2026-06-10T13:07:00+00:00",
+      "author": "Marty Cagan",
+      "detail": "newest post 1d ago",
+      "reason": "no_post_within_12h",
+      "slug": "cagan"
+    },
+    {
+      "at": "2026-06-10T13:08:00+00:00",
+      "author": "Teresa Torres",
+      "detail": "newest post 14h ago",
+      "reason": "no_post_within_12h",
+      "slug": "teresatorres"
+    },
+    {
+      "at": "2026-06-10T13:09:00+00:00",
+      "author": "Petra Wille",
+      "reason": "profile_404",
+      "slug": "petrawille"
+    },
+    {
+      "at": "2026-06-10T13:10:00+00:00",
+      "author": "Hiten Shah",
+      "reason": "profile_404",
+      "slug": "hitenism"
+    },
+    {
+      "at": "2026-06-10T13:10:00+00:00",
+      "author": "Fareed Mosavat",
+      "reason": "profile_404",
+      "slug": "fareedmosavat"
+    },
+    {
+      "at": "2026-06-10T13:11:00+00:00",
+      "author": "John Cutler",
+      "reason": "profile_404",
+      "slug": "johncutlerdept"
+    },
+    {
+      "at": "2026-06-10T13:12:00+00:00",
+      "author": "Casey Winters",
+      "detail": "newest post 6d ago",
+      "reason": "no_post_within_12h",
+      "slug": "caseywinters"
+    },
+    {
+      "at": "2026-06-10T13:12:00+00:00",
+      "author": "Matt LeMay",
+      "detail": "newest post 1d ago",
+      "reason": "no_post_within_12h",
+      "slug": "mattlemay"
+    },
+    {
+      "at": "2026-06-10T13:13:00+00:00",
+      "author": "Brian Balfour",
+      "detail": "newest original 1mo ago",
+      "reason": "no_post_within_12h",
+      "slug": "bbalfour"
+    },
+    {
+      "at": "2026-06-10T13:14:00+00:00",
+      "author": "Dan Olsen",
+      "reason": "profile_404",
+      "slug": "danolsen"
+    },
+    {
+      "at": "2026-06-10T13:15:00+00:00",
+      "author": "Janna Bastow",
+      "detail": "newest post 18h ago",
+      "reason": "no_post_within_12h",
+      "slug": "jannabastow"
+    },
+    {
+      "at": "2026-06-10T07:53:00+00:00",
+      "author": "Nikhyl Singhal",
+      "detail": "newest post 1w ago",
+      "reason": "no_post_within_24h",
+      "slug": "nikhyl"
+    }
+  ],
+  "skipped": 21,
+  "started_at": "2026-06-10T06:19:53.320379+00:00",
+  "status": "running",
+  "target": 30,
+  "trigger": "buffer_sent",
+  "max_post_age_hours": 24
+}

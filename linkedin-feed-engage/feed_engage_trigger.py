@@ -58,18 +58,30 @@ def agent_prompt_text(buffer_post_id: str, sent_at: str | None, title: str | Non
     mins = feed_cfg.get("session_minutes", 30)
     min_d = feed_cfg.get("min_delay_seconds", 45)
     max_d = feed_cfg.get("max_delay_seconds", 60)
+    target = feed_cfg.get("target_comments", 30)
+    mode = feed_cfg.get("target_mode", "thought_leaders")
+    if mode == "thought_leaders":
+        discovery = (
+            "4. Default discovery: thought_leaders mode (SKILL §3a). "
+            "Load thought_leaders.json → one comment per leader via /in/{slug}/recent-activity/all/. "
+            "Skip company pages and success-story posts. Home feed Top is fallback only when a leader has no eligible post."
+        )
+    else:
+        discovery = (
+            "4. Home feed Sort by Top only; scroll main + Load more between picks (no content search)."
+        )
     return f"""Publish-day feed engage — continuous auto mode (no approval, no batch stops).
 
 Buffer post {buffer_post_id} is live (sent_at={sent_at or "unknown"}).
 Your post: {title or "LinkedIn publish"}.
 
 Run linkedin-feed-engage end-to-end in ONE uninterrupted pass:
-1. Read ~/Projects/LinkedIn Automation/linkedin-feed-engage/SKILL.md and config.json (phase1_approval_limit=0, continuous_mode=true).
+1. Read ~/Projects/LinkedIn Automation/linkedin-feed-engage/SKILL.md and config.json (phase1_approval_limit=0, continuous_mode=true, target_mode={mode}).
 2. Confirm LinkedIn logged in at https://www.linkedin.com/feed/ — if /login or /checkpoint, stop and notify user.
-3. Load session file {session_path()} — run until posted >= target (30) or {mins} min elapsed. Do NOT stop early for review.
-4. Home feed Sort by Top only; scroll main + Load more between picks (no content search).
-5. One top-level comment per distinct feed post; verified @ mention chip (SKILL §5).
-6. Pace {min_d}–{max_d}s between comments; scroll main during waits. No links in comments.
+3. Load session file {session_path()} — run until posted >= target ({target}) or {mins} min elapsed. Do NOT stop early for review.
+{discovery}
+5. One top-level comment per distinct post; verified @ mention chip (SKILL §5).
+6. Pace {min_d}–{max_d}s between comments; scroll during waits. No links in comments.
 
 Do not ask for approval. Do not spawn subagents. Stop only on captcha, auth failure, or 4× same failure."""
 

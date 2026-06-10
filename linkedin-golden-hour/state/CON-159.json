@@ -1,0 +1,12 @@
+{
+  "buffer_sent_at": "2026-06-10T04:30:05.895Z",
+  "buffer_status": "sent",
+  "caption": "Enterprise integrations don't fail on APIs. They fail in week one when nobody agrees what \"done\" means.\n\nAfter onboarding-heavy work, three artifacts save the project:\n\n\u2192 Integration truth map \u2014 what syncs, what doesn't, who owns breakage (not buried in a 40-slide deck)\n\u2192 Decision log \u2014 one line per open call: owner, deadline, blocker (updated before standup)\n\u2192 Success metric contract \u2014 baseline metric, target by day 30, who signs off\n\nWithout these, you're not delayed \u2014 you're rebuilding trust in month two.\n\nSave this for your next enterprise kickoff.\n\nWhat's the one doc your team actually reads in week one?\n\n#productmanagement #integrations #B2B",
+  "external_link": "https://www.linkedin.com/feed/update/urn:li:share:7470331433081978880",
+  "last_tick_at": "2026-06-10T06:25:08.954663+00:00",
+  "notion_sync_at": "2026-06-10T06:18:05.415842+00:00",
+  "notion_synced": true,
+  "posted_replies": [],
+  "processed_message_ids": [],
+  "share_urn": "urn:li:share:7470331433081978880"
+}

@@ -1,0 +1,19 @@
+{
+  "campaign_id": "CON-159",
+  "notion_page_id": "3743dffe-a139-81c8-8e26-f0163c8c0b3c",
+  "buffer_post_id": "6a20814777ddfd3ac88917f2",
+  "golden_hour_start_ist": "2026-06-10T10:00:00+05:30",
+  "golden_hour_end_ist": "2026-06-10T11:30:00+05:30",
+  "gmail_since_hours": 3,
+  "auto_post": true,
+  "post_context": {
+    "title": "3 artifacts that unblock enterprise onboarding in week one",
+    "caption_hook": "Enterprise integrations don't fail on APIs. They fail in week one when nobody agrees what \"done\" means.",
+    "themes": [
+      "Integration truth map: what syncs, what doesn't, who owns breakage.",
+      "Decision log: owner, deadline, blocker — updated before standup.",
+      "Success metric contract: baseline, day-30 target, sign-off owner."
+    ],
+    "cta_question": "What's the one doc your team actually reads in week one?"
+  }
+}

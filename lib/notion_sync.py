@@ -104,31 +104,49 @@ def mappings_from_campaigns() -> dict[str, str]:
     return out
 
 
-def mappings_from_notion_scheduled() -> dict[str, str]:
+def mappings_from_notion_pipeline_statuses(statuses: tuple[str, ...] = ("Scheduled", "Ready")) -> dict[str, str]:
+    """Map Buffer post IDs from Content Library rows still in the active pipeline."""
     out: dict[str, str] = {}
-    cursor: str | None = None
-    while True:
-        body: dict[str, Any] = {
-            "filter": {"property": "Status", "status": {"equals": "Scheduled"}},
-            "page_size": 100,
-        }
-        if cursor:
-            body["start_cursor"] = cursor
-        data = notion_request("POST", f"databases/{CONTENT_LIBRARY_DB}/query", body)
-        for page in data.get("results", []):
-            page_id = page["id"]
-            post_id = extract_buffer_post_id(fetch_page_text(page_id))
-            if post_id:
-                out[post_id] = page_id
-        if not data.get("has_more"):
-            break
-        cursor = data.get("next_cursor")
+    for status in statuses:
+        cursor: str | None = None
+        while True:
+            body: dict[str, Any] = {
+                "filter": {"property": "Status", "status": {"equals": status}},
+                "page_size": 100,
+            }
+            if cursor:
+                body["start_cursor"] = cursor
+            data = notion_request("POST", f"databases/{CONTENT_LIBRARY_DB}/query", body)
+            for page in data.get("results", []):
+                page_id = page["id"]
+                post_id = extract_buffer_post_id(fetch_page_text(page_id))
+                if post_id:
+                    out[post_id] = page_id
+            if not data.get("has_more"):
+                break
+            cursor = data.get("next_cursor")
     return out
+
+
+def mappings_from_notion_scheduled() -> dict[str, str]:
+    return mappings_from_notion_pipeline_statuses(("Scheduled",))
+
+
+def fetch_page_status(page_id: str) -> str | None:
+    data = notion_request("GET", f"pages/{page_id}")
+    prop = (data.get("properties") or {}).get("Status") or {}
+    if prop.get("type") == "status":
+        return (prop.get("status") or {}).get("name")
+    return None
+
+
+def page_has_publish_block(page_text: str) -> bool:
+    return "Published live" in page_text or bool(SHARE_URN_RE.search(page_text))
 
 
 def collect_mappings() -> dict[str, str]:
     merged = mappings_from_campaigns()
-    merged.update(mappings_from_notion_scheduled())
+    merged.update(mappings_from_notion_pipeline_statuses(("Scheduled", "Ready")))
     return merged
 
 
@@ -168,30 +186,112 @@ def sync_notion_from_buffer_post(
     notion_page_id: str,
     state: dict[str, Any] | None = None,
     dry_run: bool = False,
+    force: bool = False,
 ) -> dict[str, Any] | None:
-    """Update Notion when Buffer response shows status=sent. Idempotent via state['notion_synced']."""
-    if state and state.get("notion_synced"):
-        return None
+    """Update Notion when Buffer response shows status=sent. Idempotent via state + Notion status."""
+    if state and state.get("notion_synced") and not force:
+        notion_status = fetch_page_status(notion_page_id)
+        if notion_status == "Posted":
+            return None
+
     status = post.get("status")
     if status != "sent":
         return None
 
+    notion_status = fetch_page_status(notion_page_id)
+    page_text = fetch_page_text(notion_page_id)
+    already_posted = notion_status == "Posted"
+
     share_urn = extract_share_urn(post.get("externalLink"))
-    entry = {
+    entry: dict[str, Any] = {
         "notion_page_id": notion_page_id,
         "buffer_post_id": post.get("id"),
         "share_urn": share_urn,
         "external_link": post.get("externalLink"),
         "sent_at": post.get("sentAt"),
         "synced_at": utcnow_iso(),
+        "notion_status_before": notion_status,
     }
+    if already_posted:
+        entry["action"] = "already_posted"
+        if state is not None:
+            state["notion_synced"] = True
+            state["notion_sync_at"] = entry["synced_at"]
+        return entry
+
     if dry_run:
         entry["dry_run"] = True
+        entry["action"] = "would_mark_posted"
         return entry
 
     update_page_posted(notion_page_id, post.get("sentAt"))
-    append_publish_block(notion_page_id, post, share_urn)
+    if not page_has_publish_block(page_text):
+        append_publish_block(notion_page_id, post, share_urn)
+    else:
+        entry["publish_block_skipped"] = True
+    entry["action"] = "marked_posted"
     if state is not None:
         state["notion_synced"] = True
         state["notion_sync_at"] = entry["synced_at"]
     return entry
+
+
+def cleanup_content_library(
+    buffer_get_post: Any,
+    *,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """
+    Reconcile Content Library rows with Buffer: any tracked post with status=sent
+    → Notion Status Posted + publish block (idempotent).
+    """
+    mappings = collect_mappings()
+    results: list[dict[str, Any]] = []
+    for post_id, page_id in sorted(mappings.items()):
+        try:
+            post = buffer_get_post(post_id)
+        except Exception as exc:  # noqa: BLE001
+            results.append(
+                {
+                    "buffer_post_id": post_id,
+                    "notion_page_id": page_id,
+                    "error": str(exc)[:300],
+                }
+            )
+            continue
+        if not post:
+            results.append(
+                {
+                    "buffer_post_id": post_id,
+                    "notion_page_id": page_id,
+                    "skipped": "buffer_post_not_found",
+                }
+            )
+            continue
+        entry = sync_notion_from_buffer_post(
+            post,
+            notion_page_id=page_id,
+            state=None,
+            dry_run=dry_run,
+            force=True,
+        )
+        if entry:
+            results.append(entry)
+        elif post.get("status") != "sent":
+            results.append(
+                {
+                    "buffer_post_id": post_id,
+                    "notion_page_id": page_id,
+                    "skipped": post.get("status"),
+                }
+            )
+    marked = [r for r in results if r.get("action") == "marked_posted"]
+    already = [r for r in results if r.get("action") == "already_posted"]
+    would = [r for r in results if r.get("action") == "would_mark_posted"]
+    return {
+        "mappings_checked": len(mappings),
+        "marked_posted": len(marked),
+        "already_posted": len(already),
+        "would_mark_posted": len(would),
+        "results": results,
+    }

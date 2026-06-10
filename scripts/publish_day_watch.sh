@@ -24,7 +24,7 @@ log() {
 }
 
 log "Starting publish-day watch (interval=${INTERVAL_SEC}s duration=${DURATION_SEC}s)"
-log "Tasks: sync-notion → golden_hour watch → feed_engage_trigger"
+log "Tasks: cleanup-content-library → golden_hour watch → feed_engage_trigger"
 
 deadline=$((SECONDS + DURATION_SEC))
 tick=0
@@ -34,7 +34,7 @@ while (( SECONDS < deadline )); do
 
   if [[ -f "$GH_PY" ]]; then
     log "notion sync from buffer get_post"
-    if python3 "$GH_PY" sync-notion >>"$LOG" 2>&1; then
+    if python3 "$GH_PY" cleanup-content-library >>"$LOG" 2>&1; then
       log "notion sync ok"
     else
       log "notion sync failed (see log)"

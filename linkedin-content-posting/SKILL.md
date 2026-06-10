@@ -15,6 +15,8 @@ Operate Roshan's LinkedIn pipeline from **Notion** (strategy + calendar), **Buff
 
 **Every schedule/publish run:** `notion-fetch` the live strategy page first (do not rely on memory or skill excerpts alone).
 
+**Every run (required):** **Content Library cleanup** — reconcile pipeline rows with Buffer before drafting or scheduling (see § Content Library cleanup).
+
 ## Prerequisites
 
 1. **Notion MCP** (`plugin-notion-workspace-notion`) — content system of record.
@@ -30,7 +32,7 @@ composio connections linkedin   # before Composio publish
 
 If Buffer MCP fails → stop and report; **do not use Zapier** (webhook disabled).
 
-**Post-live (scheduled):** local `golden_hour.py sync-notion` uses Buffer **`get_post`** when Cursor is not open — same response fields as Buffer MCP.
+**Post-live (scheduled):** local `golden_hour.py cleanup-content-library` (alias `sync-notion`) uses Buffer **`get_post`** when Cursor is not open — same response fields as Buffer MCP.
 
 Golden hour + feed engage → **`install_publish_day_schedule.sh`** (all Buffer posts, including CON-138).
 
@@ -48,7 +50,20 @@ Golden hour + feed engage → **`install_publish_day_schedule.sh`** (all Buffer 
 
 **Content Library:** `Name`, `Status`, `Posting on`, `Content Type`, `Theme`, `Persona`, `Tags`, body in page; PDFs in `Files & media` (upload to Drive before publish — Notion URLs are 403 for Buffer).
 
-**Status:** `Drafting` → `Ready` → `Scheduled` → `Posted` / `Rejected`. Set `Scheduled` after Buffer confirms; `Posted` after live.
+**Status:** `Drafting` → `Ready` → `Scheduled` → `Posted` / `Rejected`. Set `Scheduled` after Buffer confirms; **`Posted` immediately when Buffer is `sent`** (cleanup step — do not leave live posts on `Scheduled`).
+
+### Content Library cleanup (required every run)
+
+Stale `Scheduled` / `Ready` rows clutter the board and break the calendar. Run **before** steps 2–8 whenever you use this skill (schedule, draft, publish, or calendar review).
+
+| Where | How |
+|-------|-----|
+| **Cursor (preferred)** | For each `linkedin-golden-hour/campaigns/*.json` with `notion_page_id` + `buffer_post_id`: Buffer MCP **`get_post`** → if `status` = `sent` and Notion `Status` ≠ **Posted**, `notion-update-page` → **Posted** + append publish block (Buffer ID, share URN, LinkedIn URL from `externalLink`). Also scan Content Library rows still **Scheduled** or **Ready** whose page body contains a Buffer post ID. |
+| **CLI (launchd / no MCP)** | `python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py cleanup-content-library` (alias: `sync-notion`) — needs `NOTION_TOKEN` + `BUFFER_MCP_TOKEN` in `~/.zshrc`. Token source: Notion internal integration (same as Antigravity `~/.gemini/config/mcp_config.json` → `notion-mcp-server` env). |
+
+**Idempotent:** Skip rows already **Posted** with a publish block; do not duplicate blocks.
+
+**After instant Composio publish:** set Notion **Posted** in the same turn (cleanup still catches anything missed).
 
 ## Strategy doc (mandatory — May 2026)
 
@@ -93,13 +108,14 @@ Legacy 2024 slots: [`reference.md`](reference.md) · persona/guidelines still lo
 ## Workflow checklist
 
 ```
+- [ ] 0. Content Library cleanup — campaigns + Scheduled/Ready rows vs Buffer `sent` → Notion **Posted** (required)
 - [ ] 1. notion-fetch strategy 36f3dffe-a139-8195-9dac-f3b5a76003b7 (required)
 - [ ] 2. Notion RAG — persona + guidelines
 - [ ] 3. Content Library row — Ready; PDF pre-flight
 - [ ] 4. Pick slot from strategy (IST) unless user overrides
 - [ ] 5. Buffer MCP create_post OR Composio instant
 - [ ] 6. Notion from Buffer response — **Scheduled** after `create_post`; **Posted** when `get_post`/`create_post` shows `sent`
-- [ ] 7. Post-live (scheduled only) — `golden_hour.py sync-notion` if not updated in Cursor
+- [ ] 7. Post-live (scheduled only) — `golden_hour.py cleanup-content-library` if step 0/6 did not run in Cursor
 - [ ] 8. Golden hour — **auto** via `linkedin-golden-hour` skill (no approval)
 ```
 
@@ -183,7 +199,7 @@ Add `assets` for image: `[{"image":{"url":"<direct-url>","metadata":{"altText":"
 | `status` = `scheduled` (typical for `customScheduled`) | `Status` → **Scheduled** · append `Buffer post ID: {id}` |
 | `status` = `sent` (`shareNow`, or `get_post` after publish) | `Status` → **Posted** · append share URN + LinkedIn URL from `externalLink` |
 
-Buffer does **not** push to Cursor when a scheduled post goes live — the agent session from schedule day is gone. At publish time, local `golden_hour.py sync-notion` (or `watch`) calls the same **`get_post`** shape and updates Notion when `status=sent`.
+Buffer does **not** push to Cursor when a scheduled post goes live — the agent session from schedule day is gone. At publish time, local `golden_hour.py cleanup-content-library` (or `watch`) calls the same **`get_post`** shape and updates Notion when `status=sent`.
 
 - **Pre-flight (carousels):** Confirm PDF filename and slide 1 title match Content Library `Name` / hook. Do not reuse generic `Full-Stack PM` decks for unrelated titles. Search Drive by post title keywords; if mismatch, stop and ask user.
 
@@ -224,8 +240,10 @@ Save `x_restli_id` on Notion row; set `Status` → **Posted** via Notion MCP in 
 **Scheduled posts (CON-138-style):** `create_post` returns `scheduled` only — update Notion to **Scheduled** then. When Buffer publishes later, **`get_post` response** drives Notion **Posted** (no separate “sync job” logic — same API fields):
 
 ```bash
-python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py sync-notion
+python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py cleanup-content-library
 ```
+
+(`sync-notion` is an alias.)
 
 Runs each golden-hour watch tick. Requires `NOTION_TOKEN` in `~/.zshrc` for local scripts; Cursor uses Notion MCP instead.
 
@@ -236,7 +254,7 @@ Campaigns with `notion_page_id` (e.g. CON-138) sync on first `watch`/`tick` when
 Load **`linkedin-golden-hour`** and **`linkedin-feed-engage`** skills. **No approval** for replies or feed comments when launchd is installed.
 
 ```bash
-bash ~/LinkedIn\ Automation/scripts/install_publish_day_schedule.sh
+bash ~/Projects/LinkedIn\ Automation/scripts/install_publish_day_schedule.sh
 ```
 
 Tue–Thu 10:00 local → `publish_day_watch.sh` every 10m × 90m:
@@ -244,7 +262,7 @@ Tue–Thu 10:00 local → `publish_day_watch.sh` every 10m × 90m:
 - **`golden_hour.py watch`** — auto-replies on comments on **your** post (all Buffer sends, including CON-138)
 - **`feed_engage_trigger.py`** — arms 30 feed comments when Buffer marks post `sent`
 
-Manual one-off: `python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch`
+Manual one-off: `python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch`
 
 - **Detect:** Buffer sent posts + Gmail comment emails  
 - **Reply:** 4-part Depth Score frame · Composio `LINKEDIN_CREATE_COMMENT_ON_POST`  

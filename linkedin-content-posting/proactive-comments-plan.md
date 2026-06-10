@@ -63,7 +63,7 @@ LinkedIn feed (logged-in browser)
 
 ### Option B — Local Playwright (recommended for 90 min / 30 comments)
 
-- Script under `~/LinkedIn Automation/linkedin-feed-engage/` using **persistent Chrome profile** (already logged in).
+- Script under `~/Projects/LinkedIn Automation/linkedin-feed-engage/` using **persistent Chrome profile** (already logged in).
 - launchd same days as golden hour, or chained after your post goes live.
 - **Pros:** Runs 90 min locally; human-like delays; full scroll loop.
 - **Cons:** Build + maintain selectors; account restriction risk if too robotic.
@@ -127,7 +127,7 @@ No metrics dashboard — qualitative weekly review only.
 ## Related automation (already live)
 
 - **Golden hour:** replies on **your** posts — `golden_hour.py watch`
-- **Post-live Notion:** `golden_hour.py sync-notion` when Buffer `get_post` → `sent`
+- **Post-live Notion:** `golden_hour.py cleanup-content-library` when Buffer `get_post` → `sent` (alias: `sync-notion`)
 
 ---
 

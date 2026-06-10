@@ -1,5 +1,66 @@
 # linkedin-feed-engage changelog
 
+## 2026-06-10 — Post relevance enforcement (generic comment fix)
+
+- **Triggered:** User complaint — feed comments “do not appear relevant to the post”; fix for current and future runs.
+- **Learned:** Today’s session (`session-2026-06-10.json`, 2 posted): Lenny comment cited Fadell frame but injected publish-day “enterprise onboarding” tangent + generic “stakeholders patient through business-fix phase” closer; Janna comment paraphrased webinar title only, then generic B2B/tradeoff/AI-roadmap platitudes — both fail “could this apply to another post?” Root causes: drafting from truncated card/snippet without **See more**, part 2 thematic not lexical, publish-day topic bleed, template closers.
+- **Skill updates:** SKILL §3 (MUST expand See more), §4 **Post relevance** table + bad/good examples, session `post_snippet_referenced` field, quality bar + checklist; `agent_prompt.txt` relevance block.
+
+## 2026-06-10 — Roster slug fixes + 24h window resume
+
+- **Triggered:** Resume session from `next_leader: romanpichler` after hard-stop at 1/30; user wants high-engagement posts ≤24h (not 12h).
+- **Learned:** Seven broken roster slugs verified via web search: `aakashg0`→`aagupta`, `hitenism`→`hnshah`, `fareedmosavat`→`fareed`, `johncutlerdept`→`johnpcutler`, `danolsen`→`danolsen98`, `petrawille`→`petra-wille-b8b1329`; `melissaperri`→`melissajeanperri` (wrong PR profile). `config.json` already had `max_post_age_hours: 24`, `prefer_engaged_posts: true`, delays 15–25s.
+- **Skill updates:** `thought_leaders.json` slug corrections; session `roster_fixes` block extended.
+
+## 2026-06-10 — Resume hard-stop: 12h window roster dry
+
+- **Triggered:** Resume continuous run from `next_leader: shreyasdoshi` toward 30/30.
+- **Learned:** With `max_post_age_hours: 12`, only Lenny had an eligible post today (already commented). Next-closest: Teresa 14h, Janna 18h, Elena 17h. Six roster slugs 404 (`aakashg0`, `hitenism`, `fareedmosavat`, `johncutlerdept`, `danolsen`, `petrawille`); `melissaperri` resolves to wrong person. 30/30 in one session needs either relaxed age window or multi-day roster cadence.
+- **Skill updates:** none.
+
+## 2026-06-10 — First comment posted (Lenny Rachitsky)
+
+- **Triggered:** User "try" — resume session from `next_leader: lennyrachitsky`.
+- **Learned:** `cursor-ide-browser` available in this agent context (feed tab pre-open, logged in). Mention chip via `@Lenny` + listbox select (`ql-mention`); plain `@Name` typing alone fails. Post 1 on Lenny activity (7h, Tony Fadell three generations) — 20→21 comments after submit.
+- **Skill updates:** none.
+
+## 2026-06-10 — Start feed engage; browser MCP unavailable (subagent)
+
+- **Triggered:** User asked to start feed commenting and fix browser MCP access.
+- **Learned:** `cursor-ide-browser` is a Cursor built-in (not in `~/.cursor/mcp.json`); descriptors exist under `~/.cursor/projects/Users-rawshn-LinkedIn-Automation/mcps/` but were missing from `Users-rawshn-Projects-LinkedIn-Automation/mcps/` — symlink alone does not register the server. This subagent context gets `CallMcpTool` → "MCP server does not exist"; browser MCP worked earlier today in parent window `wb0` (allowlist log). `feed_engage_trigger.py --dry-run` → idle (golden-hour window passed); session already armed from CON-159 publish.
+- **Skill updates:** none (enable Browser in Cursor Settings → MCP; run commenting from parent agent with browser tools, not subagent).
+
+## 2026-06-10 — Resume blocked (browser MCP); Marty slug fix
+
+- **Triggered:** Resume session `session-2026-06-10.json` from `next_leader: lennyrachitsky` after prior browser disconnect.
+- **Learned:** `cursor-ide-browser` MCP not in enabled servers for this workspace (`CallMcpTool` → "MCP server does not exist"); cannot verify login or post. Marty Cagan slug `marty-cagan` → 404; correct slug is `cagan` (verified via public profile fetch).
+- **Skill updates:** `thought_leaders.json` Marty slug `cagan`; session `roster_fixes` block.
+
+## 2026-06-04 — Question commenters, not only thought leaders
+
+- **Triggered:** User asked not to always question thought leaders directly — sometimes question commentators on their posts.
+- **Learned:** Leader-directed “what do you think?” every time feels repetitive; threads with ≥2 substantive comments are better engagement targets.
+- **Skill updates:** SKILL §4 question-target table + session `question_target` / `reply_to`; `config.json` `thought_leader_question_mix`.
+
+## 2026-06-04 — Thought-leader targeting (50 humans, no company/success posts)
+
+- **Triggered:** User asked to focus on 50 PM thought leaders, real humans only, skip business pages and promotion/success posts; skill update only (no run).
+- **Learned:** Company-page comments (`tagged: false`) and cert/promo noise wasted publish-day passes; roster-driven `/in/{slug}/recent-activity/all/` beats generic content search.
+- **Skill updates:** `thought_leaders.json` (50 names + slugs); `config.json` `target_mode: thought_leaders`, expanded `skip_keywords`, `company_page_signals`; SKILL §3a/3b discovery default + explicit “do not run unless asked”.
+
+## 2026-06-04 — 30/30 completed (CON-158 publish day, no approval prompts)
+
+- **Triggered:** User asked to finish all 30 comments without mid-run approval; stop at 30/30.
+- **Learned:** Session `posted: 18` lagged `comments[]` (11 rows) — reconcile before marking complete; content search past-24h (`product management AI`, PRD, roadmap, GenAI, India startup) + home feed; company pages (Product Station, IT Tech Pulse) use plain name prefix (`tagged: false`); IT Tech Pulse submit confirmed live (`Roshan Raj Mishra • You`); final session `session-2026-06-04.json` has 30 authors, `status: completed`.
+- **Learned (parallel):** Subagent `e2c94212` on view `8bfc71` posted a different 13-author batch while parent finished another 30 — session `comments[]` is canonical for parent pass only; `reconciliation` block added; avoid parallel subagents per `single_agent_only`.
+- **Skill updates:** none.
+
+## 2026-06-04 — Feed engage started (CON-158 publish day)
+
+- **Triggered:** User asked to start feed engagement alongside golden hour.
+- **Learned:** Session armed from publish-day trigger; browser MCP began 30/30 on home feed Top (Ashley Collier 11h, Akshita Agrawal 3h — verified mention chips).
+- **Skill updates:** none.
+
 ## 2026-06-03 — 30/30 continuous mode (user speed target)
 
 - **Triggered:** User wants 30 comments in 30 minutes, no stopping between batches.

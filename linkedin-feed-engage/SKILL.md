@@ -1,18 +1,17 @@
 ---
 name: linkedin-feed-engage
 description: >-
-  Proactive LinkedIn feed comments via Cursor browser MCP: refresh home feed (Top),
-  pick posts ≤12h old with visible traction, draft Depth Score comments with verified
-  @mentions (mention chip required), post through UI. Target 30 comments in 30 minutes,
-  continuous auto mode (no batch stops). Use for feed engagement or publish-day companion
-  sessions (not golden-hour replies on your posts).
+  Proactive LinkedIn feed comments via Cursor browser MCP. Default targeting: 50 curated PM
+  thought leaders (real humans, not company pages); skip promotion/success-story posts.
+  Depth Score comments with verified @mentions. Home feed is fallback only. Use for feed
+  engagement or publish-day companion sessions (not golden-hour replies on your posts).
 ---
 
 # LinkedIn Feed Engage (Cursor browser)
 
-Changelog: [`SKILL_CHANGELOG.md`](SKILL_CHANGELOG.md) · Config: [`config.json`](config.json)
+Changelog: [`SKILL_CHANGELOG.md`](SKILL_CHANGELOG.md) · Config: [`config.json`](config.json) · Roster: [`thought_leaders.json`](thought_leaders.json)
 
-**Goal:** **≥30 substantive comments in 30 minutes** on others’ posts (PM / builder / India startup niche), **one uninterrupted run** — no “keep going” prompts, no mid-session subagents. **Not** golden-hour replies on your own posts — see [`linkedin-golden-hour`](../linkedin-golden-hour/SKILL.md).
+**Goal:** Substantive comments on **real PM thought leaders’** posts (see roster), **one uninterrupted run** when executing — no “keep going” prompts, no mid-session subagents. Default session size remains **30** (`target_comments`); user may set **50** for a full-roster pass. **Not** golden-hour replies on your own posts — see [`linkedin-golden-hour`](../linkedin-golden-hour/SKILL.md).
 
 **Tool:** `cursor-ide-browser` MCP only (no Playwright in Phase 1).
 
@@ -41,7 +40,8 @@ After sign-in, confirm feed loads: https://www.linkedin.com/feed/
 
 1. **Cursor browser MCP** (`cursor-ide-browser`) — user logged into LinkedIn in browser tab.
 2. **Notion MCP** — load persona + strategy before drafting (same as content posting).
-3. **Config** — [`config.json`](config.json) (`target_comments`, delays, niche/skip keywords).
+3. **Config** — [`config.json`](config.json) (`target_mode`, `target_comments`, delays, skip rules).
+4. **Thought leaders** — [`thought_leaders.json`](thought_leaders.json) when `target_mode` is `thought_leaders` (default).
 
 ```text
 notion-fetch: 36f3dffe-a139-8195-9dac-f3b5a76003b7   # strategy
@@ -105,7 +105,9 @@ Confirm **Sort by: Top** after any reload.
 
 **Skip** if:
 
-- Matches `skip_keywords` (engagement bait, hiring-only, DM me)
+- Matches `skip_keywords` (engagement bait, hiring-only, DM me, **success-story / promotion language**)
+- **Company or media page** author (not a person on the roster)
+- **Success-story post** on a person’s profile (promotion, new job, anniversary, certificate, open-to-work celebration) — scroll to next post or next leader
 - Already commented (same author in session log)
 - Promoted/sponsored card (usually labeled “Promoted”)
 - You already commented on this post URL in session file
@@ -114,7 +116,31 @@ Confirm **Sort by: Top** after any reload.
 
 **Prefer engaged posts (post–golden-hour):** When the user wants traction, not cold outreach — skip brand-new zero-engagement posts from `Latest`. Target posts with visible reactions/comments, typically **12h–3d** old (after the author’s golden hour).
 
-**Discovery (default):** **Home feed only** — `https://www.linkedin.com/feed/` with **Sort by: Top**; refresh + scroll before each pick (§1). Do **not** use content search or date filters unless the user explicitly asks. Fallback content search is documented in `config.json` `discovery_urls` only for exceptional scarcity.
+**Discovery (default — `target_mode: thought_leaders`):** Work the **50-person roster** in [`thought_leaders.json`](thought_leaders.json). One comment per leader per session (track `author` in session JSON). Do **not** comment on company/media pages.
+
+**Discovery (fallback):** Home feed Top or `discovery_urls.content_search_past_week` only when a leader has no eligible post ≤ `max_post_age_hours` after checking their activity page.
+
+### 3a. Thought-leader targeting (default)
+
+| Rule | Action |
+|------|--------|
+| **Real humans only** | Author must be a person (`/in/{slug}`), with a personal headline on the card. **Skip** company pages, newsletters, and “Follow {Brand}” cards (`skip_company_pages`, `company_page_signals` in config). |
+| **Roster order** | Load `thought_leaders.json` → pick next leader not in session `comments[]` → open `https://www.linkedin.com/in/{slug}/recent-activity/all/` (config `discovery_urls.thought_leader_activity`). |
+| **Post pick** | Newest **original** post ≤ `max_post_age_hours` with PM/builder substance (`niche_keywords`). Prefer posts with reactions/comments (`prefer_engaged_posts`). |
+| **Hard skip — success stories** | No comments on promotions, new roles, anniversaries, certifications, open-to-work celebrations, or generic “excited to announce” posts (`skip_success_story_posts` + `skip_keywords` in config). Scroll to their next post or skip leader and log `skipped`. |
+| **Mention** | `@` + listbox select → verify `[data-type="mention"]` chip (required for people). |
+| **Questions** | Do **not** aim every closing question at the thought leader — mix targets (§4). |
+| **Session target 50** | When user asks for full roster: set `target: 50` in session JSON; one leader = one comment max. |
+
+**The 50 (display names)** — slugs in JSON:
+
+Marty Cagan · Teresa Torres · Lenny Rachitsky · Shreyas Doshi · Gibson Biddle · April Dunford · Melissa Perri · John Cutler · Janna Bastow · Roman Pichler · Nikhyl Singhal · Scott Belsky · Jeff Patton · Brian Balfour · Rich Mironov · Jackie Bavaro · Deb Liu · Elena Verna · Casey Winters · Fareed Mosavat · Hiten Shah · Wes Kao · Ravi Mehta · Ken Norton · Martin Eriksson · Todd Olson · Julie Zhuo · Rahul Vohra · Paul Adams · Anna Marie Clifton · Heidi Helfand · Tim Herbig · Matt LeMay · Jeff Gothelf · Dan Olsen · Christina Wodtke · Sachin Rekhi · Cindy Alvarez · Ant Murphy · Noah Weiss · Lane Shackleton · Andrew Chen · Petra Wille · Josh Porter · Aakash Gupta · Itamar Gilad · Giff Constable · Shishir Mehrotra · David Cancel · Hunter Walk
+
+**Do not run** a engage session unless the user explicitly asks (skill/config updates alone are not a trigger).
+
+### 3b. Home feed (fallback only)
+
+`https://www.linkedin.com/feed/` with **Sort by: Top** when thought-leader activity is dry. Same skip rules: **no company pages**, **no success-story posts**.
 
 ### 3. Open comment box
 
@@ -122,19 +148,58 @@ On selected post card:
 
 1. Click **Comment** (or focus comment area under post)
 2. `browser_snapshot` — confirm comment textbox visible (`placeholder` often “Add a comment…”)
-3. If “See more” truncates post → expand before drafting
+3. **MUST** click **See more** / **…more** if the post body is truncated — read the **full** text (and skim visible thread comments) **before** drafting. Never draft from card title, webinar promo line, or first sentence alone.
 
 ### 4. Draft comment (Depth Score — others’ posts)
 
 4-part frame, **no URLs**:
 
 1. **Verified `@` tag the post author** (LinkedIn mention chip — clickable, notifies them). **Plain `@Name` text does not count as tagged.**
-2. `{specific line you're reacting to}.`
-3. One concrete insight or counter-point
-4. Optional: one sentence experience (“I've seen this with…”)
-5. Open question
+2. **Quote or paraphrase one concrete phrase/claim** from the expanded post (or a commenter's line when engaging the thread) — e.g. their named framework, number, example, or contrast they drew. **Not** your publish-day topic or a generic PM theme.
+3. One concrete insight or counter-point **about that same claim**
+4. Optional: one sentence experience — only if it **directly illustrates the cited claim** (not a tangent onto your own post topic)
+5. Open question — **target varies** (see below); must be answerable only given **this** post/thread
 
 **Chat draft format:** show as `@Ayush Muniya — …` for your planning, but the browser must contain a real mention chip before submit (see §5).
+
+#### Post relevance (mandatory — current + future comments)
+
+Comments that *sound* like Depth Score but ignore the post read generic. Enforce **before every submit**:
+
+| Rule | Requirement |
+|------|-------------|
+| **Expand first** | Click **See more** when present; draft only after reading full body (+ thread if ≥2 substantive comments). |
+| **Cite in part 2** | Part 2 MUST include **one specific phrase, term, number, or named example** from the post (or commenter line). Paraphrase OK; vague theme (“indispensability”, “three generations”) without their wording is not enough. |
+| **Match primary subject** | Comment topic = post's **main** argument. Do not pivot to enterprise onboarding, tradeoff calls, or AI-roadmap platitudes unless **they** raised that exact angle. |
+| **No publish-day bleed** | Do not inject themes from **your** Buffer post / golden-hour topic into unrelated leader posts. |
+| **Ban generic closers** | Reject questions that could fit any PM post: “What signals keep stakeholders patient?”, “Where does that split show up on AI roadmaps?”, “How do you balance speed vs quality?” Rewrite until the question names **their** example, constraint, or framework. |
+| **Pre-submit test** | Ask: *“Could this comment apply to a different post?”* → **if yes, rewrite** before typing in browser. |
+| **Session log** | Append `post_snippet_referenced` — the exact phrase/claim you anchored on (10–80 chars). |
+
+**Bad (generic — rewrite):** `@Janna — framing indispensability as judgment + context lands hard. I've seen B2B teams stall on tradeoff calls. Where does that split show up on AI-heavy roadmaps?` — paraphrases title only; experience + question fit any AI post.
+
+**Good (anchored):** `@Janna — your line that AI won't replace PMs who own *which* problems to solve (not prompt libraries) is the filter I'd use in hiring. When you run the webinar exercise, what artifact proves someone picked judgment over tooling?` — cites her claim; question only makes sense on **this** post.
+
+#### Question targets on thought-leader posts (mandatory variety)
+
+Do **not** end every comment with a question aimed at the thought leader (“What would you add, Marty?”). That reads sycophantic and repetitive.
+
+| Situation | What to do |
+|-----------|------------|
+| Post has **0–1** shallow comments | Insight + question can go to the **post author** (still specific to their post). |
+| Post has **≥2** substantive comments | **Often** anchor on a commenter's point; close by questioning **the thread** or a **commenter** (not the leader). |
+| Strong disagreement in thread | Add a nuance or counter-frame; ask **commenters** to weigh tradeoffs (“@Name — you framed X as Y; where would that break in enterprise?”). |
+| Leader already asked a question in the post | **Do not** ask them another mirror question — extend the debate toward **commenters** or “others in this thread”. |
+
+**Mix (thought-leader mode):** Across a session, aim for **≤50%** of closing questions primarily directed at the roster author; the rest should engage **existing commentators** (by name when visible) or the **audience in the thread** without interrogating the leader again.
+
+**Ways to question commenters (top-level or reply):**
+
+- Reference their line: “@Commenter — the bit about {X} assumes {Y}; what would falsify that in a B2B rollout?”
+- Reply under their comment when the UI offers **Reply** (preferred for direct back-and-forth); session log `reply_to` with their display name.
+- Second `@` chip for a commenter is optional when it fits length; **post author chip stays required** on top-level comments for notify/visibility.
+
+**Still avoid:** “Great take!”-only praise, leader worship, or duplicate questions the leader already answered in the post body.
 
 Length: **120–280 chars** ideal for 30/30 pace; max 900. Load persona tone from Notion. Shorter beats longer when on the clock.
 
@@ -159,7 +224,7 @@ Length: **120–280 chars** ideal for 30/30 pace; max 900. Load persona tone fro
 
 - Click **Comment** / **Reply** submit button after typing (appears once text is present — not Enter alone)
 - `browser_snapshot` — confirm a **`link`** named author appears in the comment row (not only plain text in the comment body string)
-- Append to session JSON: `{ "author", "snippet", "comment", "posted_at", "status": "posted", "tagged": true }`
+- Append to session JSON: `{ "author", "snippet", "post_snippet_referenced", "comment", "posted_at", "status": "posted", "tagged": true, "question_target": "author|commenter|thread" }` (optional `reply_to` when nested). **`post_snippet_referenced`** = the exact phrase/claim from the post (or commenter) used in part 2.
 
 ### 6. Pace (30/30 continuous)
 
@@ -188,17 +253,23 @@ Read delays from `config.json` (default **45–60 s** jitter between submits).
 
 ## Comment quality bar
 
-Same as [`proactive-comments-plan.md`](../linkedin-content-posting/proactive-comments-plan.md):
+Same as [`proactive-comments-plan.md`](../linkedin-content-posting/proactive-comments-plan.md) plus §4 **Post relevance**:
 
 - No “Great post!” / “Thanks for sharing!”
 - No links, hashtags stacks, DM CTAs
-- Must reference something **specific** in their post
+- **See more** expanded; part 2 cites a **specific** phrase/claim from the full post (or commenter line)
+- Insight + question tied to **that** claim — not generic PM platitudes or your publish-day topic
+- Pre-submit: *“Could this apply to a different post?”* → if yes, rewrite
+- On thought-leader posts: **vary who the closing question addresses** — not always the post author
 
 ## Mention verification checklist (agent)
 
 Before every submit, confirm ALL of:
 
-- [ ] Post age ≤ 12h (or skip)
+- [ ] Post age ≤ `max_post_age_hours` (or skip)
+- [ ] **See more** clicked when truncated; full post read
+- [ ] Part 2 names a **specific** phrase/claim from the post (`post_snippet_referenced` ready for JSON)
+- [ ] Pre-submit relevance test passed (not interchangeable with another post)
 - [ ] Feed refreshed since previous pick
 - [ ] Editor has `[data-type="mention"]` for post author
 - [ ] Posted comment shows author as clickable mention link in snapshot
@@ -206,11 +277,15 @@ Before every submit, confirm ALL of:
 
 ## Examples
 
-**"Run feed engagement 30/30"** → Confirm logged in → load Notion persona → session file → continuous scroll/filter loop → auto-post all 30 without stopping.
+**"Run feed engagement 30/30"** → Thought-leader mode: roster loop, human posts only, skip success stories → auto-post without stopping.
 
-**"5 comment warmup"** → Same flow; `target_comments: 5` in session; all with approval.
+**"Comment on the 50 PM leaders"** → `target: 50` in session; one comment per roster name; same skip rules.
 
-**"I'm logged in, go"** → `browser_navigate` feed → start loop immediately.
+**"5 comment warmup"** → `target_comments: 5`; first five roster leaders with eligible posts.
+
+**"Update skill only"** → Edit SKILL/config/roster; **do not** open browser or post.
+
+**"I'm logged in, go"** → Start thought-leader discovery (activity pages), not generic feed spam.
 
 ## Security
 
@@ -222,7 +297,7 @@ Before every submit, confirm ALL of:
 When **your** Buffer LinkedIn post enters golden hour, local launchd arms feed engage automatically:
 
 ```bash
-bash ~/LinkedIn\ Automation/scripts/install_publish_day_schedule.sh
+bash ~/Projects/LinkedIn\ Automation/scripts/install_publish_day_schedule.sh
 ```
 
 Each **10 min × 90 min** tick (Tue–Thu 10:00 local):

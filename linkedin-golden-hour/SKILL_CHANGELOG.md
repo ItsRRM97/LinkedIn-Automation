@@ -2,6 +2,18 @@
 
 Rule: `.cursor/rules/skill-self-improvement.mdc`
 
+## 2026-06-04 — CON-158 golden hour armed
+
+- **Triggered:** User asked to start commenting for golden hour.
+- **Learned:** CON-158 live (`urn:li:share:7468157097751461888`); first `watch` ticks had zero Gmail comment notifications; agent loop every 10m armed alongside existing `publish_day_watch.sh`.
+- **Skill updates:** none.
+
+## 2026-06-03 — Publish-day docs + cleanup CLI in scripts
+
+- **Triggered:** Repo polish with `linkedin-content-posting`.
+- **Learned:** `publish_day_watch.sh` calls `cleanup-content-library` first; `sync-notion` remains CLI alias.
+- **Skill updates:** SKILL publish-day tick list; `~/Projects/LinkedIn Automation/` paths; `launchd/README.md`.
+
 ## 2026-06-02 — Fix: Notion sync crash blocks comment-watching
 
 - **Triggered:** User started service; `golden_hour.py watch` crashed on Notion token missing.

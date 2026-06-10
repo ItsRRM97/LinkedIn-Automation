@@ -1,5 +1,5 @@
 {
-  "last_arm_at": "2026-06-03T04:34:07.897501+00:00",
+  "last_arm_at": "2026-06-10T06:20:00.204932+00:00",
   "triggered": {
     "6a19809c417d9b6a6a946636": {
       "armed_at": "2026-06-03T04:34:07.896425+00:00",
@@ -8,6 +8,14 @@
     "6a1bfe9aefeb482ae3405f25": {
       "armed_at": "2026-06-02T04:31:21.820373+00:00",
       "session_file": "/Users/rawshn/Projects/LinkedIn Automation/linkedin-feed-engage/state/session-2026-06-02.json"
+    },
+    "6a208146a89b34b77e0a3c95": {
+      "armed_at": "2026-06-04T04:35:58.784461+00:00",
+      "session_file": "/Users/rawshn/Projects/LinkedIn Automation/linkedin-feed-engage/state/session-2026-06-04.json"
+    },
+    "6a20814777ddfd3ac88917f2": {
+      "armed_at": "2026-06-10T06:20:00.204676+00:00",
+      "session_file": "/Users/rawshn/Projects/LinkedIn Automation/linkedin-feed-engage/state/session-2026-06-10.json"
     }
   }
 }

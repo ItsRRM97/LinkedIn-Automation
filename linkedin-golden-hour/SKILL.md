@@ -42,7 +42,7 @@ Per-post state: `state/{campaign_id}.json`
 Watches **every LinkedIn post Buffer marks `sent`** within the golden-hour window (default **90 min** after `sentAt`):
 
 ```bash
-python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch
+python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch
 ```
 
 Each run:
@@ -76,7 +76,7 @@ From strategy `36f3dffe-a139-8195-9dac-f3b5a76003b7`:
 ### One tick — all Buffer posts (generic)
 
 ```bash
-python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch
+python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch
 ```
 
 ### One tick — single campaign
@@ -84,13 +84,13 @@ python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch
 Dry-run (generate only):
 
 ```bash
-python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py tick --campaign CON-138 --dry-run
+python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py tick --campaign CON-138 --dry-run
 ```
 
 ### Manual comment → auto-reply (no Gmail)
 
 ```bash
-python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py reply \
+python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py reply \
   --campaign CON-138 \
   --commenter "Alex Kumar" \
   --comment "We do weekly user calls but struggle with saying no."
@@ -98,28 +98,32 @@ python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py reply \
 
 ### Golden hour loop (publish day)
 
-**Canonical — all Buffer posts (including CON-138):**
+**Canonical — all Buffer posts** (campaign JSON optional for richer reply themes):
 
 ```bash
-bash ~/LinkedIn\ Automation/scripts/install_publish_day_schedule.sh
+bash ~/Projects/LinkedIn\ Automation/scripts/install_publish_day_schedule.sh
 ```
 
-Launchd `com.rawshn.linkedin-publish-day-watch` · Tue–Thu 10:00 local → `publish_day_watch.sh` every 10m × 90m (`watch` + `feed_engage_trigger`).
+Launchd `com.rawshn.linkedin-publish-day-watch` · Tue–Thu 10:00 local → `publish_day_watch.sh` every 10m × 90m:
+
+1. `cleanup-content-library` — Notion **Posted** when Buffer is `sent`
+2. `golden_hour watch` — replies on your post
+3. `feed_engage_trigger` — arm feed comments
 
 **Manual one-off:**
 
 ```bash
-python3 ~/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch
+python3 ~/Projects/LinkedIn\ Automation/linkedin-golden-hour/golden_hour.py watch
 ```
 
-Do **not** use per-campaign launchd plists (`com.rawshn.linkedin-golden-hour-con138`) or Cursor Automations scheduled per post — the generic watcher matches any sent Buffer LinkedIn post; CON-138 keeps rich reply context via `campaigns/CON-138.json` when `buffer_post_id` matches.
+Do **not** use per-campaign launchd plists (`com.rawshn.linkedin-golden-hour-con138`) or Cursor Automations scheduled per post. The generic watcher matches any sent Buffer LinkedIn post; rich reply context comes from `campaigns/<id>.json` when `buffer_post_id` matches (e.g. CON-138, CON-158).
 
-Each tick:
+**Inside `watch` (per active post):**
 
 1. `get_post` Buffer ID → save `share_urn` when `status=sent`  
 2. `GMAIL_FETCH_EMAILS` `from:linkedin.com (commented OR replied) newer_than:3h`  
 3. Parse new comment notifications → generate reply → `LINKEDIN_CREATE_COMMENT_ON_POST`  
-4. Dedupe via `state/CON-138.json` `processed_message_ids`
+4. Dedupe via `state/<campaign_id>.json` `processed_message_ids`
 
 ## Composio comment payload
 
