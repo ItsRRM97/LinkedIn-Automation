@@ -1,6 +1,4 @@
 #!/bin/bash
-# Deprecated — use install_publish_day_schedule.sh (golden hour + feed engage for all posts).
+# Deprecated — forwards to publish-day schedule installer.
 set -euo pipefail
-echo "Deprecated: use install_publish_day_schedule.sh instead."
-echo "That script covers all Buffer posts (including CON-138)."
-exec bash "/Users/rawshn/Projects/LinkedIn Automation/scripts/install_publish_day_schedule.sh"
+exec bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/install_publish_day_schedule.sh"

@@ -1,0 +1,14 @@
+{
+  "started_at": "2026-01-01T10:00:00.000000+00:00",
+  "status": "running",
+  "phase": "auto",
+  "trigger": "buffer_sent",
+  "buffer_post_id": "000000000000000000000000",
+  "buffer_sent_at": "2026-01-01T10:00:00.000Z",
+  "publish_title": "Example publish title",
+  "target": 30,
+  "posted": 0,
+  "skipped": 0,
+  "approval_remaining": 0,
+  "comments": []
+}

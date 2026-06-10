@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Any
 
 FEED_DIR = Path(__file__).resolve().parent
-GH_DIR = FEED_DIR.parent / "linkedin-golden-hour"
+REPO_ROOT = FEED_DIR.parent
+GH_DIR = REPO_ROOT / "linkedin-golden-hour"
 STATE_DIR = FEED_DIR / "state"
 CONFIG_PATH = FEED_DIR / "config.json"
 REGISTRY_PATH = STATE_DIR / "trigger_registry.json"
@@ -76,7 +77,7 @@ Buffer post {buffer_post_id} is live (sent_at={sent_at or "unknown"}).
 Your post: {title or "LinkedIn publish"}.
 
 Run linkedin-feed-engage end-to-end in ONE uninterrupted pass:
-1. Read ~/Projects/LinkedIn Automation/linkedin-feed-engage/SKILL.md and config.json (phase1_approval_limit=0, continuous_mode=true, target_mode={mode}).
+1. Read {REPO_ROOT}/linkedin-feed-engage/SKILL.md and config.json (phase1_approval_limit=0, continuous_mode=true, target_mode={mode}).
 2. Confirm LinkedIn logged in at https://www.linkedin.com/feed/ — if /login or /checkpoint, stop and notify user.
 3. Load session file {session_path()} — run until posted >= target ({target}) or {mins} min elapsed. Do NOT stop early for review.
 {discovery}

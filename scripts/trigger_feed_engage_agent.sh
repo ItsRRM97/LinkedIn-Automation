@@ -2,7 +2,9 @@
 # Optional: launch local Cursor agent for feed engage when CURSOR_API_KEY + cursor_sdk exist.
 set -euo pipefail
 
-ROOT="/Users/rawshn/Projects/LinkedIn Automation"
+# shellcheck source=lib.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+
 ARMED="$ROOT/linkedin-feed-engage/state/feed_engage_armed.json"
 PROMPT_FILE="$ROOT/linkedin-feed-engage/state/agent_prompt.txt"
 LOG="$ROOT/logs/feed-engage-agent-trigger.log"
@@ -27,8 +29,6 @@ if ! python3 -c "import cursor_sdk" 2>/dev/null; then
   echo "[$(date -Iseconds)] cursor_sdk not installed — pip install cursor-sdk" >>"$LOG"
   exit 0
 fi
-
-PROMPT="$(cat "$PROMPT_FILE")"
 
 python3 <<PY >>"$LOG" 2>&1
 import os

@@ -2,9 +2,11 @@
 # Publish day: golden-hour auto-replies + feed engage trigger when Buffer post goes live.
 set -euo pipefail
 
+# shellcheck source=lib.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+
 INTERVAL_SEC="${1:-600}"
 DURATION_SEC="${2:-5400}"
-ROOT="/Users/rawshn/Projects/LinkedIn Automation"
 GH_PY="$ROOT/linkedin-golden-hour/golden_hour.py"
 FEED_PY="$ROOT/linkedin-feed-engage/feed_engage_trigger.py"
 LOG_DIR="$ROOT/logs"

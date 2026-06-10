@@ -1,0 +1,14 @@
+{
+  "buffer_organization_id": "YOUR_BUFFER_ORG_ID",
+  "linkedin_channel_id": "YOUR_BUFFER_LINKEDIN_CHANNEL_ID",
+  "golden_hour_minutes": 90,
+  "gmail_since_hours": 3,
+  "sent_lookback_hours": 24,
+  "list_posts_limit": 15,
+  "linkedin_actor_id": "YOUR_LINKEDIN_MEMBER_ID",
+  "skip_buffer_post_ids": [],
+  "skip_text_contains": [
+    "test post",
+    "safe to delete"
+  ]
+}

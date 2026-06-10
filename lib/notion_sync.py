@@ -11,8 +11,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-CONTENT_LIBRARY_DB = "753369dc15fb4b3c82dd9c88cb753c3c"
 CAMPAIGNS_DIR = Path(__file__).resolve().parent.parent / "linkedin-golden-hour" / "campaigns"
+
+
+def content_library_db_id() -> str:
+    db_id = os.environ.get("NOTION_CONTENT_LIBRARY_DB", "").strip()
+    if not db_id:
+        raise RuntimeError(
+            "NOTION_CONTENT_LIBRARY_DB not set (Notion Content Library database ID, hex without dashes)"
+        )
+    return db_id.replace("-", "")
 BUFFER_POST_ID_RE = re.compile(r"(?:Buffer post(?: ID)?[:：]?\s*`?)([0-9a-f]{24})", re.I)
 SHARE_URN_RE = re.compile(r"urn:li:share:\d+")
 
@@ -116,7 +124,7 @@ def mappings_from_notion_pipeline_statuses(statuses: tuple[str, ...] = ("Schedul
             }
             if cursor:
                 body["start_cursor"] = cursor
-            data = notion_request("POST", f"databases/{CONTENT_LIBRARY_DB}/query", body)
+            data = notion_request("POST", f"databases/{content_library_db_id()}/query", body)
             for page in data.get("results", []):
                 page_id = page["id"]
                 post_id = extract_buffer_post_id(fetch_page_text(page_id))
@@ -126,10 +134,6 @@ def mappings_from_notion_pipeline_statuses(statuses: tuple[str, ...] = ("Schedul
                 break
             cursor = data.get("next_cursor")
     return out
-
-
-def mappings_from_notion_scheduled() -> dict[str, str]:
-    return mappings_from_notion_pipeline_statuses(("Scheduled",))
 
 
 def fetch_page_status(page_id: str) -> str | None:

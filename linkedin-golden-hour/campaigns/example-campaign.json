@@ -1,0 +1,17 @@
+{
+  "campaign_id": "CON-EXAMPLE",
+  "notion_page_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "buffer_post_id": "000000000000000000000000",
+  "golden_hour_minutes": 90,
+  "gmail_since_hours": 3,
+  "auto_post": true,
+  "post_context": {
+    "title": "Example post title for reply context",
+    "caption_hook": "Hook line from your post caption.",
+    "themes": [
+      "Theme one — concrete insight the auto-reply can reference.",
+      "Theme two — another angle from the post."
+    ],
+    "cta_question": "What would you add to this list?"
+  }
+}

@@ -2,9 +2,11 @@
 # Golden hour watcher — runs `golden_hour.py watch` every 10m for 90m.
 set -euo pipefail
 
+# shellcheck source=lib.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+
 INTERVAL_SEC="${1:-600}"
 DURATION_SEC="${2:-5400}"
-ROOT="/Users/rawshn/Projects/LinkedIn Automation"
 PY="$ROOT/linkedin-golden-hour/golden_hour.py"
 LOG_DIR="$ROOT/logs"
 
@@ -29,10 +31,9 @@ tick=0
 while (( SECONDS < deadline )); do
   tick=$((tick + 1))
   log "--- watch tick $tick ---"
-  SYNC_PY="$ROOT/linkedin-golden-hour/golden_hour.py"
-  if [[ -f "$SYNC_PY" ]]; then
+  if [[ -f "$PY" ]]; then
     log "notion sync from buffer get_post"
-    if python3 "$SYNC_PY" cleanup-content-library >>"$LOG" 2>&1; then
+    if python3 "$PY" cleanup-content-library >>"$LOG" 2>&1; then
       log "notion sync ok"
     else
       log "notion sync failed (see log)"

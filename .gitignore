@@ -1,5 +1,36 @@
 .DS_Store
 __pycache__/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets and local credentials (never commit)
+.env
+.env.*
+!.env.example
+credentials.json
+*.pem
+*.key
+
+# Runtime logs
 logs/
 *.log
+
+# Golden hour runtime state (see state/*.example.json)
+linkedin-golden-hour/state/*
+!linkedin-golden-hour/state/.gitkeep
+!linkedin-golden-hour/state/*.example.json
+
+# Campaign overrides with your Notion/Buffer IDs (see campaigns/example-campaign.json)
+linkedin-golden-hour/campaigns/*.json
+!linkedin-golden-hour/campaigns/example-campaign.json
+!linkedin-golden-hour/campaigns/TEST-PIPELINE.json
+
+# Local Buffer/Notion config (copy from config.example.json)
+linkedin-golden-hour/config.json
+
+# Feed engage session/runtime state
+linkedin-feed-engage/state/*
+!linkedin-feed-engage/state/.gitkeep
+!linkedin-feed-engage/state/session.example.json

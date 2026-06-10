@@ -20,7 +20,6 @@ if str(LIB_DIR) not in sys.path:
 
 from notion_sync import (  # noqa: E402
     cleanup_content_library,
-    collect_mappings,
     fetch_page_status,
     sync_notion_from_buffer_post,
 )
@@ -29,8 +28,15 @@ CAMPAIGNS_DIR = SKILL_DIR / "campaigns"
 CONFIG_PATH = SKILL_DIR / "config.json"
 REGISTRY_PATH = STATE_DIR / "buffer_registry.json"
 
-ACTOR_ID = "2P7nq91zOA"
-ACTOR_URN = f"urn:li:person:{ACTOR_ID}"
+def actor_urn(cfg: dict[str, Any]) -> str:
+    actor_id = (
+        os.environ.get("LINKEDIN_ACTOR_ID")
+        or cfg.get("linkedin_actor_id")
+        or ""
+    ).strip()
+    if not actor_id:
+        raise RuntimeError("LINKEDIN_ACTOR_ID or linkedin_actor_id in config.json required for Composio replies")
+    return f"urn:li:person:{actor_id}"
 
 COMMENT_SUBJECT_RE = re.compile(
     r"(?P<name>.+?)\s+(?:commented on your post|commented on this|replied to your comment)",
@@ -388,8 +394,9 @@ def fetch_linkedin_comment_emails(since_hours: int = 2) -> list[dict[str, str]]:
     return [normalize_email_record(r) for r in find_messages(payload) if isinstance(r, dict)]
 
 
-def post_reply(share_urn: str, reply_text: str) -> dict[str, Any]:
-    payload = {"actor": ACTOR_URN, "object": share_urn, "target_urn": share_urn, "message": {"text": reply_text}}
+def post_reply(share_urn: str, reply_text: str, cfg: dict[str, Any]) -> dict[str, Any]:
+    urn = actor_urn(cfg)
+    payload = {"actor": urn, "object": share_urn, "target_urn": share_urn, "message": {"text": reply_text}}
     try:
         return composio_execute("LINKEDIN_CREATE_COMMENT_ON_POST", payload)
     except RuntimeError as exc:
@@ -503,7 +510,7 @@ def watch(dry_run: bool = False) -> dict[str, Any]:
             entry["dry_run"] = True
         else:
             try:
-                entry["response"] = post_reply(share_urn, reply)
+                entry["response"] = post_reply(share_urn, reply, cfg)
                 entry["posted"] = True
                 state.setdefault("posted_replies", []).append({"at": utcnow_iso(), "commenter": comment["commenter"], "reply": reply, "message_id": mid})
                 state.setdefault("processed_message_ids", []).append(mid)
@@ -526,6 +533,7 @@ def tick(campaign_id: str, dry_run: bool = False) -> dict[str, Any]:
     path = CAMPAIGNS_DIR / f"{campaign_id}.json"
     if not path.exists():
         raise RuntimeError(f"Unknown campaign: {campaign_id}")
+    cfg = load_config()
     campaign = load_json(path)
     state = load_state(campaign_id)
     state["last_tick_at"] = utcnow_iso()
@@ -547,7 +555,7 @@ def tick(campaign_id: str, dry_run: bool = False) -> dict[str, Any]:
         entry = {"commenter": parsed["commenter"], "reply": reply, "posted": False}
         if not dry_run:
             try:
-                entry["response"] = post_reply(share_urn, reply)
+                entry["response"] = post_reply(share_urn, reply, cfg)
                 entry["posted"] = True
                 processed.add(mid)
                 state.setdefault("posted_replies", []).append({"at": utcnow_iso(), "commenter": parsed["commenter"], "reply": reply, "message_id": mid})
@@ -570,7 +578,7 @@ def post_manual(campaign_id: str, commenter: str, comment_text: str, dry_run: bo
     reply = generate_reply(commenter, comment_text, campaign.get("post_context", {}))
     if dry_run:
         return {"share_urn": share_urn, "reply": reply, "dry_run": True}
-    resp = post_reply(share_urn, reply)
+    resp = post_reply(share_urn, reply, load_config())
     state.setdefault("posted_replies", []).append({"at": utcnow_iso(), "commenter": commenter, "reply": reply, "manual": True})
     save_state(campaign_id, state)
     return {"share_urn": share_urn, "reply": reply, "posted": True, "response": resp}
