@@ -17,7 +17,7 @@ Token math: ~2k tokens per comment × 100/day ≈ **200k tokens/day**. Free NVID
 |-----------|---------|-------------|
 | `publish_day_watch.sh` (launchd) | Your Mac | **No** — Mac must be awake |
 | Feed fetch | linkedincli (cookies) | Your Mac |
-| Comment post | **Composio** `LINKEDIN_CREATE_COMMENT_ON_POST` | Your Mac |
+| Comment post | **Composio** `LINKEDIN_CREATE_COMMENT_ON_POST` | Composio API (Mac runs the tick) |
 | Golden hour (Composio) | Your Mac | **No** |
 | **Cursor Cloud Agent** | Cursor cloud | **Not for this** — no access to your LinkedIn cookies, Buffer token, or local launchd |
 
@@ -29,12 +29,20 @@ For laptop-off operation you need a **small always-on host** (Mac mini, VPS, or 
 
 1. Sign up at [console.groq.com](https://console.groq.com)
 2. Create an API key
-3. Add to `~/.zshrc`:
+3. Add to `~/.zshrc` (must use `export`):
 
 ```bash
 export GROQ_API_KEY="gsk_..."
 export FEED_GROQ_MODEL="llama-3.3-70b-versatile"
 ```
+
+Verify:
+
+```bash
+bash scripts/preflight_feed_engage.sh
+```
+
+Alternative: copy vars from [`.env.example`](../.env.example) into repo `.env` (gitignored); `load_launch_env.sh` sources it for launchd.
 
 Default model in `config.json`: `llama-3.3-70b-versatile` (free tier with rate limits).
 
@@ -61,10 +69,10 @@ Verify read access:
 npx -y @bcharleson/linkedincli feed view --limit 3
 ```
 
-Verify write access (optional smoke test):
+Comments are posted via **Composio** (`LINKEDIN_CREATE_COMMENT_ON_POST`), not linkedincli engage (linkedincli write returns HTTP 400). Smoke test Composio:
 
 ```bash
-npx -y @bcharleson/linkedincli engage comment <activity-id> --text "Test comment"
+composio execute LINKEDIN_GET_MY_INFO
 ```
 
 If import fails with missing `li_at`, log into LinkedIn in Chrome again and re-run the import script.
@@ -100,8 +108,11 @@ On publish days, launchd runs `publish_day_watch.sh` every **10 minutes** for **
 ## Manual test
 
 ```bash
+# Preflight (env vars)
+bash scripts/preflight_feed_engage.sh
+
 # Dry run (LLM + filters, no LinkedIn post)
-python3 linkedin-feed-engage/feed_engage_daemon.py --dry-run
+python3 linkedin-feed-engage/feed_engage_daemon.py --dry-run --force --max-comments 5
 
 # Live (posts comments)
 python3 linkedin-feed-engage/feed_engage_daemon.py
@@ -119,6 +130,9 @@ cat linkedin-feed-engage/state/daily_quota.json
 | `comments_per_tick` | `3` | Comments per 10-min watch tick |
 | `engage_pre_publish_minutes` | `15` | Start commenting before Buffer `dueAt` / live |
 | `engage_post_publish_minutes` | `90` | Stop after publish anchor |
+| `feed_fetch_count` | `80` | Home feed posts to fetch per tick |
+| `thought_leader_fallback_min_eligible` | `3` | When fewer eligible home posts, pull roster activity |
+| `thought_leader_posts_per_leader` | `3` | Posts per leader on fallback |
 | `llm.provider` | `groq` | `groq` or `openrouter` |
 | `llm.groq_model` | `llama-3.3-70b-versatile` | Groq model id |
 
@@ -126,11 +140,14 @@ cat linkedin-feed-engage/state/daily_quota.json
 
 | Error | Fix |
 |-------|-----|
-| `OPENROUTER_API_KEY not set` | Export key in `~/.zshrc`, `source ~/.zshrc` |
+| `GROQ_API_KEY not set` | Export key in `~/.zshrc`, `source ~/.zshrc` |
+| `OPENROUTER_API_KEY not set` | Only when `llm.provider=openrouter`; export key or switch to Groq |
 | `LINKEDIN_LI_AT` missing | Export cookies; refresh when session expires |
 | `quota_exhausted` | Wait until UTC midnight or lower `daily_comment_cap` |
 | `idle` / no window | No Buffer LinkedIn post in −15m…+90m window |
-| OpenRouter 429 | Free tier throttle; reduce `comments_per_tick` or switch to Groq |
+| Groq 429 / rate limit | Reduce `comments_per_tick` or wait for free-tier reset |
+| OpenRouter 429 | Free tier throttle; switch to Groq or reduce `comments_per_tick` |
+| `fetch failed` / linkedincli | Re-run `import_linkedin_cookies.sh`; daemon retries 3× with backoff |
 
 ## Legacy browser mode
 

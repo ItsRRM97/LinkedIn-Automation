@@ -1,21 +1,64 @@
 ---
 name: linkedin-feed-engage
 description: >-
-  Proactive LinkedIn feed comments via Cursor browser MCP. Default: home feed Top (PM/builder
-  posts strictly under 8h old); thought-leader roster is fallback only. Skip promotion/success-
-  story posts. Depth Score comments with verified @mentions. Use for feed engagement or publish-
-  day companion sessions (not golden-hour replies on your posts).
+  Proactive LinkedIn feed comments. Default: hands-off daemon (linkedincli read,
+  Groq LLM, Composio post) on Buffer publish days. Legacy: Cursor browser MCP
+  for assisted sessions. PM/builder niche, post-type routing (opinion questions
+  vs career ack). Not golden-hour replies on your posts.
 ---
 
-# LinkedIn Feed Engage (Cursor browser)
+# LinkedIn Feed Engage
 
-Changelog: [`SKILL_CHANGELOG.md`](SKILL_CHANGELOG.md) · Config: [`config.json`](config.json) · Roster: [`thought_leaders.json`](thought_leaders.json)
+Changelog: [`SKILL_CHANGELOG.md`](SKILL_CHANGELOG.md) · Config: [`config.json`](config.json) · Daemon docs: [`docs/FEED_ENGAGE_DAEMON.md`](../docs/FEED_ENGAGE_DAEMON.md)
 
-**Goal:** Substantive comments on **fresh PM/builder posts** (home feed first; 15-leader roster fallback), **one uninterrupted run** when executing — no “keep going” prompts, no mid-session subagents. Default session size remains **30** (`target_comments`). **Not** golden-hour replies on your own posts — see [`linkedin-golden-hour`](../linkedin-golden-hour/SKILL.md).
+**Goal:** Substantive comments on fresh PM/builder posts with niche filters and post-type routing (`opinion_question` vs `career_ack`). **Not** golden-hour replies on your own posts — see [`linkedin-golden-hour`](../linkedin-golden-hour/SKILL.md).
+
+## Runner modes
+
+| Mode | `runner_mode` | When to use |
+|------|---------------|-------------|
+| **Daemon (default)** | `daemon` | Publish-day automation, hands-off ticks, no Cursor |
+| **Browser (legacy)** | `browser` | Manual assisted sessions in main Cursor chat |
+
+### Daemon mode (default)
+
+**Stack:** Buffer window → `feed_engage_daemon.py` → linkedincli **read** → Groq draft → Composio `LINKEDIN_CREATE_COMMENT_ON_POST`.
+
+**One-time env** (in `~/.zshrc` as `export VAR=...` — launchd reads via [`scripts/load_launch_env.sh`](../scripts/load_launch_env.sh)):
+
+| Variable | Required |
+|----------|----------|
+| `GROQ_API_KEY` | Yes (default LLM) |
+| `LINKEDIN_LI_AT` / `LINKEDIN_JSESSIONID` | Yes (feed read) |
+| `BUFFER_MCP_TOKEN` | Yes (publish-day window) |
+| `COMPOSIO_API_KEY` or Composio CLI login | Yes (comment post) |
+
+**Preflight:**
+
+```bash
+bash scripts/preflight_feed_engage.sh
+```
+
+**Manual tick:**
+
+```bash
+python3 linkedin-feed-engage/feed_engage_daemon.py --dry-run --force --max-comments 5
+python3 linkedin-feed-engage/feed_engage_daemon.py --force --max-comments 5
+```
+
+**Discovery:** Home feed via linkedincli (`feed view`). If fewer than `thought_leader_fallback_min_eligible` posts pass filters, daemon pulls recent activity from [`thought_leaders.json`](thought_leaders.json) via `feed user <slug>`.
+
+**Publish day:** `bash scripts/install_publish_day_schedule.sh` → launchd runs `publish_day_watch.sh` every 10 min × 90 min (Tue–Thu 10:00 local). **Mac awake required; Cursor does not.**
+
+Full setup: [`docs/FEED_ENGAGE_DAEMON.md`](../docs/FEED_ENGAGE_DAEMON.md).
+
+### Browser legacy mode
+
+Set `"runner_mode": "browser"` in config. Requires **Cursor browser MCP** in **main agent chat** (not Task subagent). Sections below through § Publish-day browser notes apply to this path only.
 
 **Tool:** `cursor-ide-browser` MCP only (no Playwright in Phase 1).
 
-## Browser MCP scope (mandatory — read before any session)
+## Browser MCP scope (legacy — `runner_mode: browser`)
 
 `cursor-ide-browser` tabs are **scoped to the Cursor agent context** that created or last interacted with them. **Background Task subagents do not inherit the parent agent's browser tabs** — `browser_tabs` list often returns empty even when the main chat has 8+ LinkedIn tabs open.
 
@@ -355,9 +398,9 @@ Before every submit, confirm ALL of:
 - Never type LinkedIn password or 2FA in chat or automation.
 - Session logs in `state/` — no credentials; comment text only.
 
-## Publish-day automation (go-live trigger)
+## Publish-day automation
 
-When **your** Buffer LinkedIn post enters golden hour, local launchd arms feed engage automatically:
+When **your** Buffer LinkedIn post enters the engagement window (−15m to +90m), local launchd runs feed engage automatically:
 
 ```bash
 bash ~/Projects/LinkedIn\ Automation/scripts/install_publish_day_schedule.sh
@@ -365,23 +408,31 @@ bash ~/Projects/LinkedIn\ Automation/scripts/install_publish_day_schedule.sh
 
 Each **10 min × 90 min** tick (Tue–Thu 10:00 local):
 
-1. `golden_hour.py watch` — auto-replies on comments **your** post (Composio, no approval)
-2. `feed_engage_trigger.py` — on first `sent` Buffer post → creates auto session + `state/feed_engage_armed.json` + agent prompt
+1. `golden_hour.py watch` — auto-replies on comments **your** post (Composio)
+2. **`feed_engage_daemon.py`** (default) — hands-off feed comments (linkedincli + Groq + Composio)
 
-**Requirements (publish day):**
+**Requirements (daemon, default):**
 
 | Requirement | Why |
 |-------------|-----|
 | Mac awake + logged in | launchd runs locally |
+| `export GROQ_API_KEY=...` in `~/.zshrc` | LLM drafts (run `bash scripts/preflight_feed_engage.sh`) |
+| LinkedIn cookies in `~/.zshrc` | `bash scripts/import_linkedin_cookies.sh` |
+| Composio LinkedIn connected | Comment API |
+
+**Legacy browser path** (`runner_mode: browser`):
+
+| Requirement | Why |
+|-------------|-----|
 | Cursor open | Browser MCP needs IDE |
 | LinkedIn logged in at `/feed/` | Comment UI |
-| Optional: `CURSOR_API_KEY` + `pip install cursor-sdk` | Zero-click agent launch via `trigger_feed_engage_agent.sh` |
+| Optional: `CURSOR_API_KEY` + SDK | `trigger_feed_engage_agent.sh` |
 
-**Manual fallback:** When notification fires, paste prompt from `state/agent_prompt.txt` into **main Cursor agent chat** (not Task subagent).
+**Manual fallback (browser):** Paste prompt from `state/agent_prompt.txt` into **main Cursor agent chat**.
 
-**SDK launch:** `scripts/trigger_feed_engage_agent.sh` writes `agent_prompt.txt` by default. Set `FEED_ENGAGE_SDK_LAUNCH=1` + `CURSOR_API_KEY` only if you accept SDK agent may lack browser tabs; prefer main chat.
+**SDK launch (browser):** `scripts/trigger_feed_engage_agent.sh` — set `FEED_ENGAGE_SDK_LAUNCH=1` only if you accept SDK agent may lack browser tabs.
 
-**Fully unattended** (no Cursor open) = Phase 2 Playwright — see [`proactive-comments-plan.md`](../linkedin-content-posting/proactive-comments-plan.md).
+See [`docs/FEED_ENGAGE_DAEMON.md`](../docs/FEED_ENGAGE_DAEMON.md) for daemon troubleshooting.
 
 ## Related
 

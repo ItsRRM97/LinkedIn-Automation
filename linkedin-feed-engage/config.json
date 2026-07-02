@@ -14,6 +14,8 @@
     "max_tokens": 400
   },
   "target_mode": "home_feed",
+  "thought_leader_fallback_min_eligible": 3,
+  "thought_leader_posts_per_leader": 3,
   "thought_leaders_file": "thought_leaders.json",
   "thought_leader_count": 15,
   "thought_leader_question_mix": {

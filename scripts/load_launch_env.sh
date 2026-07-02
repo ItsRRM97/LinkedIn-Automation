@@ -4,7 +4,18 @@
 # shellcheck shell=bash
 
 load_launch_env() {
-  local zshrc="${HOME}/.zshrc"
+  local script_dir repo_env zshrc
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  repo_env="$(cd "$script_dir/.." && pwd)"
+  zshrc="${HOME}/.zshrc"
+
+  if [[ -f "$repo_env/.env" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$repo_env/.env"
+    set +a
+  fi
+
   [[ -f "$zshrc" ]] || return 0
 
   local -a vars=(
@@ -33,10 +44,15 @@ load_launch_env() {
   pattern="$(IFS='|'; echo "${vars[*]}")"
 
   while IFS= read -r line; do
-    [[ "$line" =~ ^export[[:space:]]+((${pattern}))= ]] || continue
-    # shellcheck disable=SC2163
-    eval "$line"
-  done < <(grep -E "^export (${pattern})=" "$zshrc" 2>/dev/null || true)
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    if [[ "$line" =~ ^export[[:space:]]+((${pattern}))= ]]; then
+      # shellcheck disable=SC2163
+      eval "$line"
+    elif [[ "$line" =~ ^(${pattern})= ]]; then
+      # shellcheck disable=SC2163
+      eval "export $line"
+    fi
+  done < <(grep -E "^export (${pattern})=|^(${pattern})=" "$zshrc" 2>/dev/null || true)
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

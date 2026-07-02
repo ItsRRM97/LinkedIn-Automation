@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hands-off feed engage daemon: Buffer windows + LLM comments + linkedincli."""
+"""Hands-off feed engage daemon: Buffer windows + Groq LLM + Composio comments."""
 
 from __future__ import annotations
 
@@ -25,6 +25,7 @@ if str(LIB_DIR) not in sys.path:
     sys.path.insert(0, str(LIB_DIR))
 
 from feed_buffer_windows import discover_active_engagement_posts  # noqa: E402
+from feed_discover import discover_feed_items  # noqa: E402
 from feed_post_classify import classify_post, rank_key  # noqa: E402
 from feed_llm import LLMError, draft_comment  # noqa: E402
 from feed_quota import (  # noqa: E402
@@ -36,7 +37,6 @@ from feed_quota import (  # noqa: E402
 )
 from linkedin_cli_runner import (  # noqa: E402
     LinkedInRunnerError,
-    fetch_feed,
     normalize_feed_item,
     post_comment,
 )
@@ -62,6 +62,24 @@ def load_persona() -> str:
     if PERSONA_PATH.exists():
         return PERSONA_PATH.read_text().strip()
     return os.environ.get("FEED_PERSONA", "").strip()
+
+
+def check_daemon_prereqs(llm_cfg: dict[str, Any]) -> str | None:
+    provider = (llm_cfg.get("provider") or os.environ.get("FEED_LLM_PROVIDER") or "groq").lower()
+    if provider == "groq" and not (os.environ.get("GROQ_API_KEY") or llm_cfg.get("groq_api_key")):
+        return (
+            "GROQ_API_KEY not set. Add export GROQ_API_KEY=gsk_... to ~/.zshrc, "
+            "run source ~/.zshrc, then bash scripts/preflight_feed_engage.sh"
+        )
+    if provider == "openrouter" and not (
+        os.environ.get("OPENROUTER_API_KEY") or llm_cfg.get("openrouter_api_key")
+    ):
+        return "OPENROUTER_API_KEY not set (or set llm.provider=groq in config.json)"
+    if not (os.environ.get("LINKEDIN_LI_AT") or os.environ.get("LI_AT")):
+        return "LINKEDIN_LI_AT not set — run bash scripts/import_linkedin_cookies.sh"
+    if not (os.environ.get("LINKEDIN_JSESSIONID") or os.environ.get("JSESSIONID")):
+        return "LINKEDIN_JSESSIONID not set — run bash scripts/import_linkedin_cookies.sh"
+    return None
 
 
 def post_matches_filters(item: dict[str, Any], cfg: dict[str, Any]) -> tuple[bool, str, str | None]:
@@ -109,6 +127,10 @@ def tick(*, dry_run: bool = False, max_comments: int | None = None, force: bool 
             return {"status": "idle", "message": "No Buffer posts in engagement window (-15m to +90m)"}
 
     llm_cfg = cfg.get("llm", {})
+    prereq_err = check_daemon_prereqs(llm_cfg)
+    if prereq_err:
+        return {"status": "blocked", "blocked_reason": "env", "message": prereq_err}
+
     persona = load_persona()
     min_d = int(cfg.get("min_delay_seconds", 45))
     max_d = int(cfg.get("max_delay_seconds", 120))
@@ -116,7 +138,7 @@ def tick(*, dry_run: bool = False, max_comments: int | None = None, force: bool 
     per_tick = min(per_tick, remaining_today(quota, daily_cap))
 
     try:
-        feed_items = [normalize_feed_item(i) for i in fetch_feed(int(cfg.get("feed_fetch_count", 40)))]
+        feed_items = discover_feed_items(cfg, feed_dir=FEED_DIR)
     except LinkedInRunnerError as exc:
         return {"status": "blocked", "blocked_reason": "linkedin_cli", "message": str(exc)}
 
@@ -153,8 +175,21 @@ def tick(*, dry_run: bool = False, max_comments: int | None = None, force: bool 
             results.append({"post_urn": urn, "error": f"llm:{exc}"})
             continue
 
+        min_chars = int(cfg.get("min_comment_chars", 0))
+        if min_chars and len(comment.strip()) < min_chars:
+            results.append({"post_urn": urn, "skipped": "comment_too_short"})
+            continue
+
         if dry_run:
-            results.append({"post_urn": urn, "dry_run": True, "comment_preview": comment[:200]})
+            results.append(
+                {
+                    "post_urn": urn,
+                    "dry_run": True,
+                    "post_kind": reason,
+                    "comment_style": comment_style,
+                    "comment_preview": comment[:200],
+                }
+            )
             posted_this_tick += 1
             continue
 

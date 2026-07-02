@@ -1,5 +1,17 @@
 # linkedin-feed-engage changelog
 
+## 2026-07-02 — Remaining devex concerns (SKILL, GROQ preflight, feed yield)
+
+- **Triggered:** User asked to address remaining devex concerns.
+- **Learned:** `GROQ_API_KEY` was absent from `~/.zshrc` (preflight catches before feed fetch). Home feed often group/company/promoted noise; `lib/feed_discover.py` drops noise at parse and falls back to `linkedincli feed user <slug>` when home eligible &lt; `thought_leader_fallback_min_eligible`.
+- **Skill updates:** SKILL.md restructured — daemon default at top, browser legacy below; publish-day section updated.
+
+## 2026-07-02 — devex-review: classify bug + docs alignment
+
+- **Triggered:** `/devex-review` on code, docs, bugs.
+- **Learned:** `classify_post()` wrongly returned `job_posting` for every PM author (broken merge); fixed `job_posting` branch. Default LLM provider should be `groq`. `prefer_engaged_posts` was config-only until wired in classify. linkedincli `*socialDetail` refs need `included` index for reaction counts. Feed posts via Composio only (linkedincli write 400).
+- **Skill updates:** promoted daemon path to README + `FEED_ENGAGE_DAEMON.md`; SKILL.md daemon section still pending full pass.
+
 ## 2026-07-02 — Post-type comment styles + filter overhaul
 
 - **Triggered:** User wanted opinion posts to get follow-up questions only; career/job posts get acknowledgment without questions; fix niche/recency/filters.

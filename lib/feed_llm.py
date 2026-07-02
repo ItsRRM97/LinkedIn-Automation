@@ -134,7 +134,7 @@ def draft_comment(
 ) -> str:
     rules = rules or {}
     llm_cfg = llm_cfg or {}
-    provider = (llm_cfg.get("provider") or os.environ.get("FEED_LLM_PROVIDER") or "openrouter").lower()
+    provider = (llm_cfg.get("provider") or os.environ.get("FEED_LLM_PROVIDER") or "groq").lower()
     user_block = json.dumps(
         {
             "author": post.get("author") or post.get("author_name"),

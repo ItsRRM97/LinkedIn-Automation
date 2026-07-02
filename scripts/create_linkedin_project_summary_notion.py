@@ -20,7 +20,7 @@ End-to-end publish-day engine: content planned in Notion, scheduled through Buff
 Notion Content Library → Buffer schedule → Post goes live → three parallel automations:
 1. Notion sync (Buffer sent → Posted)
 2. Golden hour replies (Gmail + Composio)
-3. Feed engage (Cursor browser MCP)
+3. Feed engage (CLI daemon: linkedincli read + Groq + Composio post)
 
 ## Three Core Modules
 
@@ -36,7 +36,8 @@ Notion Content Library → Buffer schedule → Post goes live → three parallel
 - Campaigns: CON-138, CON-158, CON-159 + generic auto-campaigns for any Buffer post
 
 ### 3. Feed Engage (linkedin-feed-engage/)
-- Proactive comments on OTHERS' posts via Cursor browser MCP
+- Proactive comments on OTHERS' posts via **daemon** (default): linkedincli feed read, Groq drafts, Composio `LINKEDIN_CREATE_COMMENT_ON_POST`
+- Legacy: Cursor browser MCP when `runner_mode=browser`
 - 50-person PM thought-leader roster, continuous mode, 30 comments/session, 45-60s delays
 - Skips promotion posts, company pages, engagement bait, posts >12h old
 - Multiple 30/30 sessions completed in production

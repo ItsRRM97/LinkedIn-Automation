@@ -7,7 +7,10 @@ import os
 import re
 import shutil
 import subprocess
+import time
 from typing import Any
+
+from feed_post_classify import parse_post_age_hours
 
 
 class LinkedInRunnerError(RuntimeError):
@@ -71,9 +74,28 @@ def _activity_id(entity_urn: str) -> str | None:
     return match.group(1) if match else None
 
 
+def _included_index(included: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    index: dict[str, dict[str, Any]] = {}
+    for block in included:
+        for key in ("entityUrn", "$id", "urn"):
+            urn = block.get(key)
+            if isinstance(urn, str) and urn:
+                index[urn] = block
+    return index
+
+
+def _resolve_ref(ref: Any, index: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    if isinstance(ref, dict):
+        return ref
+    if isinstance(ref, str) and ref in index:
+        return index[ref]
+    return None
+
+
 def parse_voyager_feed(data: dict[str, Any]) -> list[dict[str, Any]]:
     """Turn linkedincli feed JSON into normalized post dicts."""
     included = data.get("included") or []
+    index = _included_index(included)
     items: list[dict[str, Any]] = []
 
     for block in included:
@@ -93,16 +115,16 @@ def parse_voyager_feed(data: dict[str, Any]) -> list[dict[str, Any]]:
         commentary = block.get("commentary") or {}
         text = _text_view(commentary.get("text"))
 
-        from feed_post_classify import parse_post_age_hours
-
         post_age_hours = parse_post_age_hours(sub_desc)
 
-        social = block.get("*socialDetail") or block.get("socialDetail")
+        social = _resolve_ref(block.get("*socialDetail") or block.get("socialDetail"), index)
         reactions = None
         comments_count = None
-        if isinstance(social, dict):
-            reactions = social.get("totalSocialActivityCounts", {}).get("numLikes")
-            comments_count = social.get("totalSocialActivityCounts", {}).get("numComments")
+        if social:
+            counts = social.get("totalSocialActivityCounts") or {}
+            if isinstance(counts, dict):
+                reactions = counts.get("numLikes")
+                comments_count = counts.get("numComments")
 
         meta = block.get("updateMetadata") or {}
         share_urn = meta.get("shareUrn") if isinstance(meta, dict) else None
@@ -131,8 +153,8 @@ def parse_voyager_feed(data: dict[str, Any]) -> list[dict[str, Any]]:
     return items
 
 
-def fetch_feed(count: int = 30) -> list[dict[str, Any]]:
-    data = _run(["feed", "view", "--limit", str(count)])
+def fetch_user_feed(profile_id: str, count: int = 5) -> list[dict[str, Any]]:
+    data = _run(["feed", "user", profile_id, "--limit", str(count)])
     if isinstance(data, dict):
         parsed = parse_voyager_feed(data)
         if parsed:
@@ -143,7 +165,30 @@ def fetch_feed(count: int = 30) -> list[dict[str, Any]]:
                 return val
     if isinstance(data, list):
         return data
-    raise LinkedInRunnerError(f"Unexpected feed shape: {json.dumps(data)[:400]}")
+    raise LinkedInRunnerError(f"Unexpected user feed shape for {profile_id}: {json.dumps(data)[:400]}")
+
+
+def fetch_feed(count: int = 30, *, retries: int = 3) -> list[dict[str, Any]]:
+    last_err: LinkedInRunnerError | None = None
+    for attempt in range(retries):
+        try:
+            data = _run(["feed", "view", "--limit", str(count)])
+            if isinstance(data, dict):
+                parsed = parse_voyager_feed(data)
+                if parsed:
+                    return parsed
+                for key in ("items", "feed", "data", "elements"):
+                    val = data.get(key)
+                    if isinstance(val, list) and val and isinstance(val[0], dict):
+                        return val
+            if isinstance(data, list):
+                return data
+            raise LinkedInRunnerError(f"Unexpected feed shape: {json.dumps(data)[:400]}")
+        except LinkedInRunnerError as exc:
+            last_err = exc
+            if attempt < retries - 1:
+                time.sleep(2**attempt)
+    raise last_err or LinkedInRunnerError("fetch_feed failed")
 
 
 def post_comment(post_urn: str, text: str, *, share_urn: str | None = None) -> dict[str, Any]:

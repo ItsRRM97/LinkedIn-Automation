@@ -26,14 +26,14 @@ flowchart LR
   Live --> FE[feed_engage_daemon]
   Sync --> Notion
   GH --> Composio[Composio LinkedIn + Gmail]
-  FE --> CLI[linkedincli + Groq]
+  FE --> CLI[linkedincli read + Groq + Composio post]
 ```
 
 On publish days (Tue–Thu by default), `publish_day_watch.sh` runs every 10 minutes for 90 minutes:
 
 1. **Notion sync** — Buffer `sent` → Notion status **Posted**
 2. **Golden hour** — Gmail comment detection → Composio reply on your post
-3. **Feed engage** — hands-off daemon comments via linkedincli + Groq (see [docs/FEED_ENGAGE_DAEMON.md](docs/FEED_ENGAGE_DAEMON.md))
+3. **Feed engage** — hands-off daemon: linkedincli feed read, Groq drafts, Composio posts (see [docs/FEED_ENGAGE_DAEMON.md](docs/FEED_ENGAGE_DAEMON.md))
 
 ## Prerequisites
 
@@ -83,9 +83,14 @@ python3 linkedin-golden-hour/golden_hour.py cleanup-content-library
 
 # Install publish-day launchd job (Tue–Thu 10:00 local)
 bash scripts/install_publish_day_schedule.sh
+
+# Feed engage preflight (Groq + cookies + Composio)
+bash scripts/preflight_feed_engage.sh
 ```
 
-**On publish day:** Mac awake · Cursor open · LinkedIn logged in at [linkedin.com/feed/](https://www.linkedin.com/feed/).
+**On publish day (daemon mode, default):** Mac awake · `~/.zshrc` env loaded via launchd · fresh LinkedIn cookies (`scripts/import_linkedin_cookies.sh`). Cursor does **not** need to be open.
+
+**Legacy browser mode:** Mac awake · Cursor open · LinkedIn logged in at [linkedin.com/feed/](https://www.linkedin.com/feed/).
 
 ## Skills index
 
@@ -95,7 +100,7 @@ Each folder has a `SKILL.md` for Cursor Agent workflows:
 |-------|------|----------|
 | Content posting | [linkedin-content-posting/SKILL.md](linkedin-content-posting/SKILL.md) | Schedule/publish, Content Library cleanup |
 | Golden hour | [linkedin-golden-hour/SKILL.md](linkedin-golden-hour/SKILL.md) | Auto-replies on your post comments |
-| Feed engage | [linkedin-feed-engage/SKILL.md](linkedin-feed-engage/SKILL.md) | Proactive feed comments via browser |
+| Feed engage | [linkedin-feed-engage/SKILL.md](linkedin-feed-engage/SKILL.md) | Proactive feed comments (daemon default; browser legacy) |
 
 ## Configuration
 
@@ -119,13 +124,14 @@ Copy from [`config.example.json`](linkedin-golden-hour/config.example.json).
 
 | Field | Description |
 |-------|-------------|
-| `target_mode` | `thought_leaders` or home-feed `top` |
-| `target_comments` | Comments per session (default `30`) |
-| `session_minutes` | Max session duration |
-| `min_delay_seconds` / `max_delay_seconds` | Pace between comments |
-| `thought_leaders_file` | Roster JSON for leader discovery |
-| `phase1_approval_limit` | `0` = fully automatic |
-| `continuous_mode` | Run without batch approval stops |
+| `runner_mode` | `daemon` (default) or `browser` (legacy Cursor MCP) |
+| `daily_comment_cap` | Max comments per UTC day (default `100`) |
+| `comments_per_tick` | Comments per publish-day watch tick |
+| `llm.provider` | `groq` (default) or `openrouter` |
+| `target_mode` | Home feed (`home_feed`) or thought leaders |
+| `min_niche_score` / `niche_keywords*` | PM/builder relevance filter |
+| `max_post_age_hours` | Skip posts older than N hours |
+| `prefer_engaged_posts` | Prefer posts with reactions/comments when counts are present |
 
 ### Runtime state (gitignored)
 
@@ -161,7 +167,7 @@ python3 linkedin-content-posting/post_live_sync.py [--dry-run]
 - **LinkedIn Terms of Service:** Automation may violate LinkedIn's policies. Use at your own risk; keep volume human-like and review outputs.
 - **Rate limits:** Scripts pace comments and replies; do not remove delays or run multiple sessions in parallel.
 - **No secrets in git:** Tokens live in `~/.zshrc` or your secret manager. Runtime state is gitignored.
-- **Browser sessions:** Feed engage requires an authenticated LinkedIn session; stop on captcha or auth failures.
+- **Browser sessions:** Legacy browser mode needs an authenticated LinkedIn session in Cursor; daemon mode uses cookies + Composio. Stop on captcha or auth failures.
 - **Not affiliated** with LinkedIn, Buffer, or Notion.
 
 ## License

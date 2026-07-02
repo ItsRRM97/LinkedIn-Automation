@@ -51,11 +51,16 @@ while (( SECONDS < deadline )); do
   fi
 
   if [[ -f "$FEED_DAEMON" ]]; then
-    log "feed engage daemon (hands-off CLI comments)"
-    if python3 "$FEED_DAEMON" >>"$LOG" 2>&1; then
-      log "feed engage daemon ok"
+    log "feed engage preflight"
+    if ! bash "$ROOT/scripts/preflight_feed_engage.sh" >>"$LOG" 2>&1; then
+      log "feed engage preflight failed — skipping daemon tick (see log)"
     else
-      log "feed engage daemon failed (see log)"
+      log "feed engage daemon (hands-off CLI comments)"
+      if python3 "$FEED_DAEMON" >>"$LOG" 2>&1; then
+        log "feed engage daemon ok"
+      else
+        log "feed engage daemon failed (see log)"
+      fi
     fi
   elif [[ -f "$FEED_PY" ]]; then
     log "feed engage trigger (legacy Cursor browser arm)"

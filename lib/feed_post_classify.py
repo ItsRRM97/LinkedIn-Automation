@@ -29,6 +29,8 @@ _CAREER_UPDATE_RES = [
         r"\bforward graduate\b",
         r"\bmckinsey forward\b",
         r"\bnew position as\b",
+        r"\b\d+-year anniversary at\b",
+        r"\banniversary at\b",
     )
 ]
 
@@ -200,6 +202,15 @@ def classify_post(item: dict[str, Any], cfg: dict[str, Any]) -> tuple[bool, str,
         if kw.lower() in text.lower():
             return False, f"skip_keyword:{kw}", None
 
+    if cfg.get("prefer_engaged_posts"):
+        min_eng = int(cfg.get("min_reactions_or_comments", 5))
+        reactions = item.get("reactions")
+        comments_count = item.get("comments_count")
+        if reactions is not None or comments_count is not None:
+            total = int(reactions or 0) + int(comments_count or 0)
+            if total < min_eng:
+                return False, "low_engagement", None
+
     max_age = float(cfg.get("max_post_age_hours", 8))
     age_h = item.get("post_age_hours")
     if cfg.get("max_post_age_strict", True):
@@ -216,6 +227,8 @@ def classify_post(item: dict[str, Any], cfg: dict[str, Any]) -> tuple[bool, str,
     min_score = int(cfg.get("min_niche_score", 2))
     if author_is_pm(item):
         min_score = min(min_score, 1)
+
+    if kind == "job_posting":
         if score < min_score and not any(
             k in text.lower()
             for k in ("product manager", "product owner", "product management", " pm ", "po role")
