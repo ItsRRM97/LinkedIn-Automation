@@ -10,7 +10,7 @@ Built for macOS + [Cursor](https://cursor.com) with MCP integrations (Notion, Bu
 |--------|------|
 | [`linkedin-content-posting/`](linkedin-content-posting/) | Draft, schedule, publish from Notion Content Library via Buffer MCP; post-live Notion sync |
 | [`linkedin-golden-hour/`](linkedin-golden-hour/) | Auto-reply to comment notifications on **your** posts during the 90-minute golden hour |
-| [`linkedin-feed-engage/`](linkedin-feed-engage/) | Proactive comments on others' posts via Cursor browser MCP (continuous auto mode) |
+| [`linkedin-feed-engage/`](linkedin-feed-engage/) | Proactive comments on others' posts via **CLI daemon** (default) or legacy Cursor browser MCP |
 | [`lib/notion_sync.py`](lib/notion_sync.py) | Shared Notion ↔ Buffer reconciliation |
 | [`scripts/`](scripts/) | Publish-day watcher, launchd installer, optional Cursor SDK trigger |
 | [`launchd/`](launchd/) | macOS schedule templates |
@@ -23,17 +23,17 @@ flowchart LR
   Buffer --> Live[Post goes live]
   Live --> Sync[cleanup-content-library]
   Live --> GH[golden_hour watch]
-  Live --> FE[feed_engage_trigger]
+  Live --> FE[feed_engage_daemon]
   Sync --> Notion
   GH --> Composio[Composio LinkedIn + Gmail]
-  FE --> Browser[Cursor browser MCP]
+  FE --> CLI[linkedincli + Groq]
 ```
 
 On publish days (Tue–Thu by default), `publish_day_watch.sh` runs every 10 minutes for 90 minutes:
 
 1. **Notion sync** — Buffer `sent` → Notion status **Posted**
 2. **Golden hour** — Gmail comment detection → Composio reply on your post
-3. **Feed engage** — arms a Cursor agent session for ~30 proactive comments
+3. **Feed engage** — hands-off daemon comments via linkedincli + Groq (see [docs/FEED_ENGAGE_DAEMON.md](docs/FEED_ENGAGE_DAEMON.md))
 
 ## Prerequisites
 
@@ -55,9 +55,12 @@ Set in `~/.zshrc` (never commit secrets). See [`.env.example`](.env.example).
 |----------|----------|---------|
 | `BUFFER_MCP_TOKEN` | Yes (CLI/launchd) | Buffer GraphQL API |
 | `NOTION_TOKEN` | Yes (CLI/launchd) | Notion API (or `NOTION_API_KEY`) |
-| `NOTION_CONTENT_LIBRARY_DB` | Yes (CLI/launchd) | Content Library database ID (hex, no dashes) |
+| `NOTION_CONTENT_LIBRARY_DB` | Optional (CLI/launchd) | Content Library database ID (defaults to `753369dc15fb4b3c82dd9c88cb753c3c`) |
 | `LINKEDIN_ACTOR_ID` | For Composio replies | Your LinkedIn member ID |
-| `CURSOR_API_KEY` | Optional | Zero-click feed engage via `cursor-sdk` |
+| `GROQ_API_KEY` | For feed daemon | Groq LLM (free tier: `llama-3.3-70b-versatile`) |
+| `OPENROUTER_API_KEY` | Optional | If `llm.provider=openrouter` in config |
+| `LINKEDIN_LI_AT` / `LINKEDIN_JSESSIONID` | For feed daemon | linkedincli session cookies |
+| `CURSOR_API_KEY` | Optional | Legacy browser feed engage only |
 
 ## Quick start
 
@@ -143,7 +146,10 @@ python3 linkedin-golden-hour/golden_hour.py watch [--dry-run]
 python3 linkedin-golden-hour/golden_hour.py tick --campaign CON-138
 python3 linkedin-golden-hour/golden_hour.py cleanup-content-library [--dry-run]
 
-# Feed engage trigger
+# Feed engage daemon (hands-off)
+python3 linkedin-feed-engage/feed_engage_daemon.py [--dry-run]
+
+# Legacy feed engage trigger (browser mode only)
 python3 linkedin-feed-engage/feed_engage_trigger.py [--dry-run]
 
 # Post-live sync wrapper

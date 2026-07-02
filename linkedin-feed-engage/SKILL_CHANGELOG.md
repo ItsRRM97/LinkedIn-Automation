@@ -1,5 +1,95 @@
 # linkedin-feed-engage changelog
 
+## 2026-07-02 — Post-type comment styles + filter overhaul
+
+- **Triggered:** User wanted opinion posts to get follow-up questions only; career/job posts get acknowledgment without questions; fix niche/recency/filters.
+- **Learned:** `post_age_hours` from actor `subDescription` (not raw `createdAt`); `niche_keywords_strong` + `min_niche_score`; `lib/feed_post_classify.py` routes `opinion_question` vs `career_ack`; Composio post path unchanged.
+- **Skill updates:** pending — align SKILL § success-story skip with career_ack exception.
+
+## 2026-07-02 — Composio comment posting (linkedincli write broken)
+
+- **Triggered:** User asked to run live feed commenting.
+- **Learned:** linkedincli `engage comment`/`react` return HTTP 400; Composio `LINKEDIN_CREATE_COMMENT_ON_POST` works with `urn:li:share:` / `urn:li:ugcPost:` from feed `updateMetadata.shareUrn`. Feed fetch via linkedincli; post via `lib/composio_linkedin.py`.
+- **Skill updates:** pending — document Composio post path in daemon docs.
+
+## 2026-07-02 — Cookie import script + daemon demo blockers
+
+- **Triggered:** User asked for `scripts/import_linkedin_cookies.sh` and live demo (5 comments).
+- **Learned:** Groq API returns Cloudflare 1010 from Python without `User-Agent`; add header in `_groq_chat`.
+- **Skill updates:** pending — import script + `--force` in SKILL.md runner section.
+
+## 2026-07-02 — Hands-off CLI daemon (OpenRouter + linkedincli)
+
+- **Triggered:** User wanted hands-off feed engage tied to Buffer publish window, 100/day cap, OpenRouter free NVIDIA models.
+- **Learned:** `feed_engage_daemon.py` + `lib/feed_*` replace browser MCP hot path; `publish_day_watch.sh` calls daemon when `runner_mode=daemon`. Cursor Cloud Agent not suitable for LinkedIn cookie automation when laptop off.
+- **Skill updates:** pending — document daemon in SKILL.md § runner modes.
+
+## 2026-06-19 — Retry success, 1/30 Vik Gambhir
+
+- **Triggered:** User retry after MCP drop; resume feed engage.
+- **Learned:** `browser_navigate` `newTab: true` reliable when `browser_tabs` list empty. Home feed dry for &lt;8h on roster (Cutler 12h, Hiten 15h, Melissa 19h); Vik Gambhir 3h Zomato UX post eligible on feed Top. Scroll-into-view needed before Comment click on lower cards.
+- **Skill updates:** none.
+
+## 2026-06-19 — Session start, MCP drop before first comment
+
+- **Triggered:** User: start feed engage in browser.
+- **Learned:** `browser_tabs` `new` timed out on glass browser view; `browser_navigate` with `newTab: true` succeeded (viewId `f96aa9`, feed loaded, logged in). `cursor-ide-browser` MCP dropped immediately after `browser_lock` (server unavailable on scroll/snapshot).
+- **Skill updates:** none.
+
+## 2026-06-16 — Feed-first, &lt;8h posts, roster → top 15 active
+
+- **Triggered:** User: posts strictly &lt;8h; prefer home feed over thought leaders; prune inactive (&gt;5d); then cap roster at 15 most active.
+- **Learned:** Browser audit 2026-06-16: top freshness = Cutler 41m, Hiten Shah 2h, Melissa 5h, Roman 7h, Aakash 19h, then six at 1d (Paul Adams, Elena, Janna, Scott, Lenny, Itamar), Sachin + Fareed 4d, April + Nikhyl 5d. Dropped 35 (inactive &gt;1w, wrong slug `debliu`/`hwalker`/`noahweiss`, empty `teresatorres`, Gibson ~1mo, Jeff Patton ~7mo, etc.). Fast-type after mention chip breaks `ql-mention`; use CDP `insertText` for body after listbox select.
+- **Skill updates:** `config.json` `target_mode: home_feed`, `max_post_age_hours: 8`, `max_post_age_strict`, `thought_leader_count: 15`; `thought_leaders.json` v2 top-15 with `newest_post` audit field; SKILL §3 discovery order, §3a/3b/3c, examples, checklist.
+
+## 2026-06-16 — Resume main-agent session (3/30)
+
+- **Triggered:** Continue Feed Engage from 1/30 after context summary; complete Aakash + roster sweep.
+- **Learned:** Aakash Matthew Wensing post (19h) good thread target; mentioning "Customer.io" in body can auto-attach link preview (posted anyway). Elena Verna 1d "3 hours" post at 262 comments is high-engagement pick. Gibson Biddle dry (newest ~1 month). Mention listbox: type `@First` then slow ` Lastname`, click `option` not `button`.
+- **Skill updates:** none.
+
+## 2026-06-16 — Subagent browser scope fix + blocked resume (5/30)
+
+- **Triggered:** Resolve subagent `browser_tabs` blocker; resume from `next_leader_index: 10` (Nikhyl Singhal).
+- **Learned:** `cursor-ide-browser` tabs are agent-context scoped — Task subagents do not see parent's 8+ LinkedIn tabs. `browser_tabs` list empty; `browser_tabs` `new` returns `viewId` but `browser_navigate` still fails ("No browser tab available") in subagent. Main agent chat is the only reliable execution context. SDK `Agent.prompt` has same isolation risk — default trigger now main-agent prompt only (`FEED_ENGAGE_SDK_LAUNCH=1` to opt in).
+- **Skill updates:** SKILL § **Browser MCP scope** + §0 browser guard + blocked session JSON; `.cursor/rules/linkedin-feed-engage-single-agent.mdc`; `trigger_feed_engage_agent.sh` SDK gated; `feed_engage_trigger.py` prompt warns no Task handoffs.
+
+## 2026-06-16 — Resume blocked (no browser tab, 3/30)
+
+- **Triggered:** Continue from `next_leader_index: 9` (Roman Pichler); 3 posted, 4 skipped, 27 remaining.
+- **Learned:** `browser_tabs` list empty in subagent; prior `browser_view_id` `0544c7` unavailable. Session set `status: blocked`.
+- **Skill updates:** none.
+
+## 2026-06-16 — Resume blocked (no browser tab, 2/30)
+
+- **Triggered:** Resume continuous 30/30 from `next_leader_index: 3` (Shreyas Doshi); user required `browser_tabs` list first.
+- **Learned:** `browser_tabs` returned empty in subagent context; prior `browser_view_id` `b2c72e` not available. Session left at posted=2, skipped=1.
+- **Skill updates:** none.
+
+## 2026-06-16 — Feed engage blocked (browser MCP no tab)
+
+- **Triggered:** User asked to run feed commenting after Notion Posted fix.
+- **Learned:** `cursor-ide-browser` `browser_navigate` returns "No browser tab available" in subagent context (same as 2026-06-10). Composio has `LINKEDIN_CREATE_COMMENT_ON_POST` but no roster activity discovery; feed engage requires Cursor browser with LinkedIn logged in. `feed_engage_trigger.py` → idle (no posts in golden-hour window today).
+- **Skill updates:** none.
+
+## 2026-06-10 — 30/30 roster completion (48h override)
+
+- **Triggered:** Resume 25→30/30 with `thought_leader_activity`, 48h high-engagement override, no-dash comments.
+- **Learned:** Roster very dry inside 48h after ~20 leaders scanned (wrong profiles, reposts-only, 404s, empty activity). Final five: Melissa Perri (22h/46r), Paul Adams (19h/274r), Sachin Rekhi (1d/~31r), John Cutler (2d/53r), Lane Shackleton (4h/2r — only fresh original left). Submit often needs CDP click on `.comments-comment-box__submit-button`; mention via slow-type + listbox `option` click. `hwalker` = wrong person (Heidi Walker); `noahweiss` = wrong Noah W.
+- **Skill updates:** none.
+
+## 2026-06-10 — No dashes in comment body
+
+- **Triggered:** User rule — no dashes in LinkedIn comments; set as durable rule across feed engage.
+- **Learned:** Em/en dashes and hyphen clause separators read AI-generated; periods, commas, or colons read more natural. `@Name` chip prefix is fine; body after the mention must avoid dash punctuation. Compound terms (`build-to-learn`) and quoted hyphens still OK.
+- **Skill updates:** SKILL §4 **No dashes** subsection + quality bar + checklist; `agent_prompt.txt` NO DASHES block; workspace rule `.cursor/rules/linkedin-comments-no-dashes.mdc`; active session `comment_style_rules.no_dashes` for remaining picks.
+
+## 2026-06-10 — home_feed_top exhausted at 18/30
+
+- **Triggered:** Resume home_feed_top from 12/30; aggressive scroll+Load-more until dry or 30/30.
+- **Learned:** Four scroll/load cycles surfaced 6 more eligible PM posts (Sahil Garg, Kevin Thomas, Amit Mutreja, Usman Zahid, Ankit Shukla, Lokesh Gupta). After 18/30, remainder is already-commented, success stories, promoted/company, >24h, or off-topic — honest `hard_stopped` at 18. Submit via CDP parent-walk to Comment button when click intercepted; mention via listbox `option` click (not `button`).
+- **Skill updates:** none.
+
 ## 2026-06-10 — Post relevance enforcement (generic comment fix)
 
 - **Triggered:** User complaint — feed comments “do not appear relevant to the post”; fix for current and future runs.

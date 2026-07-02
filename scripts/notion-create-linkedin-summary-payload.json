@@ -1,0 +1,15 @@
+{
+  "parent": {
+    "type": "page_id",
+    "page_id": "1d63dffe-a139-8083-adde-e5fa98f11c2a"
+  },
+  "pages": [
+    {
+      "icon": "🔧",
+      "properties": {
+        "title": "LinkedIn Automation — Project Summary (Jun 2026)"
+      },
+      "content": "## Overview\nEnd-to-end publish-day engine: content planned in Notion, scheduled through Buffer, and when a post goes live the system automatically syncs status, replies to comments on your post, and arms proactive engagement on others' posts.\n\n## Architecture\nNotion Content Library → Buffer schedule → Post goes live → three parallel automations:\n1. Notion sync (Buffer sent → Posted)\n2. Golden hour replies (Gmail + Composio)\n3. Feed engage (Cursor browser MCP)\n\n## Three Core Modules\n\n### 1. Content Posting (linkedin-content-posting/)\n- Draft, schedule, publish from Notion Content Library\n- Integrations: Notion MCP, Buffer MCP, Canva MCP, Composio\n- Content Library cleanup reconciles Buffer sent → Notion Posted every run\n- Automated formats: text, single image, PDF carousel. Manual: polls, video, live\n\n### 2. Golden Hour (linkedin-golden-hour/)\n- Auto-replies on YOUR posts during 60-90 min after publish (no approval)\n- Gmail detects LinkedIn comment emails → Depth Score replies (name, cite, value, question) → Composio LinkedIn API\n- Campaigns: CON-138, CON-158, CON-159 + generic auto-campaigns for any Buffer post\n\n### 3. Feed Engage (linkedin-feed-engage/)\n- Proactive comments on OTHERS' posts via Cursor browser MCP\n- 50-person PM thought-leader roster, continuous mode, 30 comments/session, 45-60s delays\n- Skips promotion posts, company pages, engagement bait, posts >12h old\n- Multiple 30/30 sessions completed in production\n\n## Orchestration\n- `scripts/publish_day_watch.sh` — every 10 min for 90 min on publish days\n- `lib/notion_sync.py` — shared Notion ↔ Buffer reconciliation\n- launchd Tue-Thu 10:00 local via `install_publish_day_schedule.sh`\n- Each tick: cleanup-content-library → golden_hour watch → feed_engage_trigger\n\n## Cursor Agent Skills\n- linkedin-content-posting — schedule/publish, cleanup\n- linkedin-golden-hour — comment auto-replies\n- linkedin-feed-engage — proactive feed comments\n\n## Automated vs Manual\n**Automated:** Buffer scheduling, Notion sync, golden-hour replies, 30 feed comments/session, Tue-Thu launchd\n\n**Manual:** polls, native video, live; Mac awake + Cursor open for feed engage\n\n## Stack\nmacOS, Python 3.10+, Cursor with Notion/Buffer/browser MCPs, Composio CLI (LinkedIn + Gmail)\n\n**Env:** `BUFFER_MCP_TOKEN`, `NOTION_TOKEN`, `NOTION_CONTENT_LIBRARY_DB`, `LINKEDIN_ACTOR_ID`\n\n## Repo\n`~/Projects/LinkedIn Automation`"
+    }
+  ]
+}

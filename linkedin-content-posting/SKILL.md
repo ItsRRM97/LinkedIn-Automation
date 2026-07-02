@@ -142,6 +142,7 @@ Legacy 2024 slots: [`reference.md`](reference.md) · persona/guidelines still lo
 - [ ] 1. notion-fetch strategy 36f3dffe-a139-8195-9dac-f3b5a76003b7 (required)
 - [ ] 2. Notion RAG — persona + guidelines
 - [ ] 3. Content Library row — Ready; set **Content Type** from asset table; PDF pre-flight
+- [ ] 3b. **Copy review (required before Canva)** — draft caption + all slide titles/bodies in Notion page body; run expert content-writer pass. Lead with **what was built** and **what it is** (not textbook BASB recap). Use **complete sentences** on every slide body. **Do not** open Canva until copy is approved or user skips.
 - [ ] 4. Pick slot from strategy (IST) unless user overrides
 - [ ] 5. Buffer MCP create_post OR Composio instant
 - [ ] 6. Notion from Buffer response — **Scheduled** after `create_post`; **Posted** when `get_post`/`create_post` shows `sent`
@@ -229,11 +230,24 @@ Add `assets` for image: `[{"image":{"url":"<direct-url>","metadata":{"altText":"
 | `status` = `scheduled` (typical for `customScheduled`) | `Status` → **Scheduled** · append `Buffer post ID: {id}` |
 | `status` = `sent` (`shareNow`, or `get_post` after publish) | `Status` → **Posted** · append share URN + LinkedIn URL from `externalLink` |
 
+**Pipeline block in Notion (required):** use a markdown **table** with **full clickable URLs**, not bare IDs. Minimum columns:
+
+| Field | Example |
+|-------|---------|
+| Canva | `https://www.canva.com/design/DAHOHKH71Mw/edit` (use `edit_url` or `view_url` from `copy-design` / `get-design`) |
+| Drive PDF (view) | `https://drive.google.com/file/d/{FILE_ID}/view` |
+| Drive PDF (Buffer) | `https://drive.google.com/uc?export=download&id={FILE_ID}` |
+| Buffer post ID | `6a4498511a8d4d6ab1a2d1d6` (ID only is fine here) |
+
+Never log only `DAHOHKH71Mw` or `1KYr8lvj4H1vyfvNnuUGM7etPUN93U2-u` without the full `https://` link on Canva and PDF rows.
+
 Buffer does **not** push to Cursor when a scheduled post goes live — the agent session from schedule day is gone. At publish time, local `golden_hour.py cleanup-content-library` (or `watch`) calls the same **`get_post`** shape and updates Notion when `status=sent`.
 
 - **Pre-flight (carousels):** Confirm PDF filename and slide 1 title match Content Library `Name` / hook. Do not reuse generic `Full-Stack PM` decks for unrelated titles. Search Drive by post title keywords; if mismatch, stop and ask user.
 
 #### Carousel creation (automated)
+
+**Gate:** Complete **step 3b copy review** first. Paste final caption + slide copy into the Content Library page **before** Canva.
 
 **Primary — Canva MCP + branded template** (looks like yours):
 

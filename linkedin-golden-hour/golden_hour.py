@@ -106,6 +106,7 @@ def composio_execute(slug: str, args: dict[str, Any] | None = None) -> dict[str,
 
 
 def buffer_graphql(query: str, variables: dict[str, Any]) -> dict[str, Any]:
+    import ssl
     import urllib.request
 
     token = os.environ.get("BUFFER_MCP_TOKEN")
@@ -120,7 +121,14 @@ def buffer_graphql(query: str, variables: dict[str, Any]) -> dict[str, Any]:
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=45) as resp:
+    ctx: ssl.SSLContext | None = None
+    try:
+        import certifi
+
+        ctx = ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        ctx = None
+    with urllib.request.urlopen(req, timeout=45, context=ctx) as resp:
         body = json.load(resp)
     if body.get("errors"):
         raise RuntimeError(f"Buffer GraphQL error: {body['errors']}")

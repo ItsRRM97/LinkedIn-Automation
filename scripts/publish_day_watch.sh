@@ -9,15 +9,15 @@ INTERVAL_SEC="${1:-600}"
 DURATION_SEC="${2:-5400}"
 GH_PY="$ROOT/linkedin-golden-hour/golden_hour.py"
 FEED_PY="$ROOT/linkedin-feed-engage/feed_engage_trigger.py"
+FEED_DAEMON="$ROOT/linkedin-feed-engage/feed_engage_daemon.py"
 LOG_DIR="$ROOT/logs"
 
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/publish-day-watch-$(date +%Y-%m-%d).log"
 
-if [[ -f "$HOME/.zshrc" ]]; then
-  # shellcheck disable=SC1090
-  source "$HOME/.zshrc"
-fi
+# shellcheck source=load_launch_env.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/load_launch_env.sh"
+load_launch_env
 
 export PATH="${COMPOSIO_INSTALL_DIR:-$HOME/.composio}:/Applications/Cursor.app/Contents/Resources/app/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
 
@@ -26,7 +26,7 @@ log() {
 }
 
 log "Starting publish-day watch (interval=${INTERVAL_SEC}s duration=${DURATION_SEC}s)"
-log "Tasks: cleanup-content-library → golden_hour watch → feed_engage_trigger"
+log "Tasks: cleanup-content-library → golden_hour watch → feed_engage_daemon"
 
 deadline=$((SECONDS + DURATION_SEC))
 tick=0
@@ -50,8 +50,15 @@ while (( SECONDS < deadline )); do
     fi
   fi
 
-  if [[ -f "$FEED_PY" ]]; then
-    log "feed engage trigger (30 comments on others' posts)"
+  if [[ -f "$FEED_DAEMON" ]]; then
+    log "feed engage daemon (hands-off CLI comments)"
+    if python3 "$FEED_DAEMON" >>"$LOG" 2>&1; then
+      log "feed engage daemon ok"
+    else
+      log "feed engage daemon failed (see log)"
+    fi
+  elif [[ -f "$FEED_PY" ]]; then
+    log "feed engage trigger (legacy Cursor browser arm)"
     if python3 "$FEED_PY" >>"$LOG" 2>&1; then
       log "feed engage trigger ok"
     else

@@ -1,5 +1,6 @@
 #!/bin/bash
-# Golden hour watcher — runs `golden_hour.py watch` every 10m for 90m.
+# Golden hour watcher — DEPRECATED: use publish_day_watch.sh instead.
+# Runs `golden_hour.py watch` every 10m for 90m (standalone manual use only).
 set -euo pipefail
 
 # shellcheck source=lib.sh
@@ -13,10 +14,9 @@ LOG_DIR="$ROOT/logs"
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/golden-hour-watch-$(date +%Y-%m-%d).log"
 
-if [[ -f "$HOME/.zshrc" ]]; then
-  # shellcheck disable=SC1090
-  source "$HOME/.zshrc"
-fi
+# shellcheck source=load_launch_env.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/load_launch_env.sh"
+load_launch_env
 
 export PATH="${COMPOSIO_INSTALL_DIR:-$HOME/.composio}:$PATH"
 

@@ -84,7 +84,7 @@ Run linkedin-feed-engage end-to-end in ONE uninterrupted pass:
 5. One top-level comment per distinct post; verified @ mention chip (SKILL §5).
 6. Pace {min_d}–{max_d}s between comments; scroll during waits. No links in comments.
 
-Do not ask for approval. Do not spawn subagents. Stop only on captcha, auth failure, or 4× same failure."""
+Do not ask for approval. Do not spawn subagents or Task tool handoffs — browser MCP is main-agent only (SKILL § Browser MCP scope). Stop only on captcha, auth failure, browser blocked, or 4× same failure."""
 
 
 def create_or_update_session(
@@ -163,6 +163,11 @@ def arm_feed_engage(post: dict[str, Any], gh_cfg: dict[str, Any], feed_cfg: dict
 def tick(dry_run: bool = False) -> dict[str, Any]:
     gh_cfg = load_golden_hour_config()
     feed_cfg = load_feed_config()
+    if feed_cfg.get("runner_mode") == "daemon":
+        return {
+            "status": "delegated",
+            "message": "runner_mode=daemon — use feed_engage_daemon.py (publish_day_watch calls it directly)",
+        }
     if not feed_cfg.get("auto_mode", True):
         return {"status": "disabled", "message": "auto_mode=false in feed engage config"}
 

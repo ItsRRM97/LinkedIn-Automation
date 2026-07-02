@@ -13,13 +13,15 @@ from typing import Any
 
 CAMPAIGNS_DIR = Path(__file__).resolve().parent.parent / "linkedin-golden-hour" / "campaigns"
 
+# Canonical Content Library DB — linkedin-content-posting/SKILL.md (override via env)
+DEFAULT_CONTENT_LIBRARY_DB = "753369dc15fb4b3c82dd9c88cb753c3c"
+
 
 def content_library_db_id() -> str:
-    db_id = os.environ.get("NOTION_CONTENT_LIBRARY_DB", "").strip()
-    if not db_id:
-        raise RuntimeError(
-            "NOTION_CONTENT_LIBRARY_DB not set (Notion Content Library database ID, hex without dashes)"
-        )
+    db_id = (
+        os.environ.get("NOTION_CONTENT_LIBRARY_DB", "").strip()
+        or DEFAULT_CONTENT_LIBRARY_DB
+    )
     return db_id.replace("-", "")
 BUFFER_POST_ID_RE = re.compile(r"(?:Buffer post(?: ID)?[:：]?\s*`?)([0-9a-f]{24})", re.I)
 SHARE_URN_RE = re.compile(r"urn:li:share:\d+")
@@ -150,7 +152,11 @@ def page_has_publish_block(page_text: str) -> bool:
 
 def collect_mappings() -> dict[str, str]:
     merged = mappings_from_campaigns()
-    merged.update(mappings_from_notion_pipeline_statuses(("Scheduled", "Ready")))
+    try:
+        merged.update(mappings_from_notion_pipeline_statuses(("Scheduled", "Ready")))
+    except RuntimeError as exc:
+        # Campaign JSON mappings still work; pipeline scan needs NOTION_TOKEN + DB access
+        print(f"[notion_sync] pipeline scan skipped: {exc}", file=__import__("sys").stderr)
     return merged
 
 

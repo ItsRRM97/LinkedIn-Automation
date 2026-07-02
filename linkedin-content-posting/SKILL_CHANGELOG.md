@@ -2,6 +2,168 @@
 
 Rule: `.cursor/rules/skill-self-improvement.mdc`
 
+## 2026-07-01 — Copy review gate + Notion pipeline full URLs
+
+- **Triggered:** User flagged weak ChiefDesk/BASB carousel copy; asked for expert writer review before Canva; Notion pipeline must use full clickable Canva + Drive URLs, not bare IDs.
+- **Learned:** Draft caption + slides in Notion first; expert pass before `copy-design`. Pipeline table: Canva `edit_url`, Drive `view` + Buffer `uc?export=download` links. CON-167 Buffer `6a4498511a8d4d6ab1a2d1d6` carousel refresh.
+- **Skill updates:** Workflow checklist step **3b** (copy review before Canva); Pipeline block table with full `https://` URLs; carousel creation gate references 3b.
+
+## 2026-06-24 — CON-166 polish (agent-era PM thesis)
+
+- **Triggered:** Full workflow rerun: disguised portfolio / open-for-opportunities text post; avoid CON-165 feature tour; richer SHA-256 dedup beat from `rawshns-health-hub` (`dedup.ts`, `body-metrics.ts` sync/update logic).
+- **Learned:** Text-only (#3 format) fits thesis + recruiter signal without repeating CON-165 image carousel. Thu 25 Jun 10:05 IST next slot after Wed CON-165. Buffer `edit_post` on `6a3b0a519247fdcf91345b2d`; Notion CON-166 `3883dffea139810d9320db22033a9768`. Hashtags: #ProductManagement #BuildInPublic #OpenToWork (PM + builder + opportunity pyramid).
+- **Skill updates:** none.
+
+## 2026-06-24 — Agent-era PM opportunities post (CON-166)
+
+- **Triggered:** User scheduled new open-for-opportunities / PM thesis post for Thu 25 Jun 10:05 IST; prior draft agent had not finished Buffer/Notion sync.
+- **Learned:** Text-only thesis post (SHA-256 dedup beat from Health Hub, what/why vs how, PM class naming question, open-to-work CTA). Buffer `create_post` `6a3b0a519247fdcf91345b2d`; CON-165 `6a3adf9f09a816a60cbcdfa8` untouched (Wed). Notion `3883dffea139810d9320db22033a9768` · Posting on 2026-06-25 · Status Scheduled. Hashtags: #ProductManagement #BuildInPublic #OpenToWork.
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub hashtag trim (3 tags)
+
+- **Triggered:** User requested researched 3-hashtag swap on CON-165; drop all five prior tags (#ProductManagement #BuildInPublic #AI #HealthTech #FullStackPM).
+- **Learned:** 2025-2026 guidance favors exactly 3 intent-matched tags (pyramid: community + niche vertical + builder narrative). Picked #IndieHackers (solo builder audience), #DigitalHealth (health data unification, less saturated than #HealthTech), #LearnInPublic (build-journey share without #BuildInPublic). Buffer `edit_post` text-only on `6a3adf9f09a816a60cbcdfa8`; 6 images unchanged. Notion `3883dffe-a139-8144-958f-d32091b53da1` Hashtags section added. Wed 24 Jun 10:05 IST (`2026-06-24T10:05:00+05:30`) unchanged.
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub Gemini stopgap beat
+
+- **Triggered:** User added interim Gemini-app beat (upload screenshots, AI coach, no charts/persistence) to CON-165; PM/builder voice bridge after fragmentation silos, before "So I made them talk."
+- **Learned:** One beat between problem and solution clarifies the gap (coaching without unified viz + persistence). Buffer `edit_post` text-only on `6a3adf9f09a816a60cbcdfa8`; 6 images unchanged. Notion `3883dffe-a139-8144-958f-d32091b53da1` Body synced. Wed 24 Jun 10:05 IST (`2026-06-24T10:05:00+05:30`) unchanged.
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub builder close swap
+
+- **Triggered:** User replaced reflective/teaser close ("Personal Health Hub is for me first" / "Already on the next project") with PM-voice builder pivot: Cursor, zero budget left, not-very-good coding skills, onto next builder projects.
+- **Learned:** Close sits after honest reflective paragraph, immediately before hashtags. Expert draft body restored in full; only final line changed. Buffer `edit_post` text-only on `6a3adf9f09a816a60cbcdfa8`; 6 images unchanged. Notion `3883dffe-a139-8144-958f-d32091b53da1` Hook/Body/CTA synced. Wed 24 Jun 10:05 IST (`2026-06-24T10:05:00+05:30`) unchanged.
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub technical + motivation copy refresh
+
+- **Triggered:** User wanted richer PM-voice copy on CON-165: keep $20/Auto/boring-stack lead, add explicit stack (PWA, Vision OCR, Notion, CSV, Web Share Target, RAG coach, Recharts), siloed Android app chain (HealthSense→FitDays, Amazfit→Zepp, Strong), fitness motivation + "what you cannot measure" line, honest reflective close.
+- **Learned:** Hook order still wins: cost/Auto → 2-night boring stack → motivation → siloed apps → technical bullets → Android one-liner → reflective close. Buffer `edit_post` text-only on `6a3adf9f09a816a60cbcdfa8`; 6 mobile images unchanged. Notion `3883dffe-a139-8144-958f-d32091b53da1` Hook/Body/CTA synced. Wed 24 Jun 10:05 IST (`2026-06-24T04:35:00Z`) unchanged.
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub 6-image mobile carousel swap
+
+- **Triggered:** User supplied 6 new native mobile screenshots to replace 2 cropped images on CON-165 before Wed 24 Jun 10:05 IST publish.
+- **Learned:** Native 465×1024 Android shots need no status-bar crop. Portfolio path `public/assets/health-hub-mobile-01-coach.png` through `06-fitness.png` → `https://rawshn.com/assets/...` after `vercel deploy --prod`. Buffer `edit_post` accepts all 6 images on LinkedIn (no 4-image cap hit). `get_post` confirms dimensions + URLs post-edit. Copy unchanged; Notion `3883dffe-a139-8144-958f-d32091b53da1` Assets + Buffer image count updated.
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub key-message restore (cost + boring stack lead)
+
+- **Triggered:** User said key message was lost after app-source/Android edits; restore $20 Cursor budget + standard-software skill insight as primary takeaway; app ecosystem details as supporting context only.
+- **Learned:** CON-165 hook order matters: cost → boring-stack PM-engineer skill → 2-night proof → product context → Android one-liner → teaser. Replaced agent 0649ff70 copy (opened with Strong/FitDays/Zepp) entirely. Buffer `6a3adf9f09a816a60cbcdfa8` + Notion `3883dffe-a139-8144-958f-d32091b53da1` synced; Wed 24 Jun 10:05 IST unchanged; images unchanged.
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub FitDays/HealthSense + Android openness
+
+- **Triggered:** User refined CON-165 copy: FitDays = app, HealthSense = scale brand; add thoughtful Android openness vs Apple walled-garden builder insight (custom PWA, share targets, Coach Stryder).
+- **Learned:** Scale telemetry wording: "body composition through FitDays, the app for my HealthSense scale." Android paragraph belongs after product features, before build-honesty block. Wed 24 Jun 10:05 IST (`2026-06-24T04:35:00Z`) unchanged.
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub app-source clarity (Android)
+
+- **Triggered:** User clarified data sources for CON-165 copy: Strong = gym set logging, FitDays = weighing-scale body composition, Zepp = Amazfit Active sleep + food logging, Android-only stack. Personal Health Hub naming only.
+- **Learned:** User-facing copy should name the device/app role per source (not generic "gym/sleep/body comp"). Web Share Target is accurate Android ingestion hook from portfolio MDX. Wed 24 Jun 10:05 IST slot still valid (~8h ahead at edit time).
+- **Skill updates:** none.
+
+## 2026-06-24 — Personal Health Hub copy + mobile screenshot crop
+
+- **Triggered:** User requested repo-grounded copy refresh (Personal Health Hub naming, 2-night build narrative, curiosity close) and mobile portrait screenshot crops before Wed 24 Jun 10:05 IST publish.
+- **Learned:** Factual stack from `rawshn-portfolio/src/content/work/rawshns-health-hub.mdx` (Strong/FitDays/Zepp → Notion, Vision OCR, SHA-256 dedup, Coach Stryder RAG + Intelligence Dossier + 8-week telemetry, Recharts, Next.js PWA on Vercel). PIL venv crop to 420px width overwrote `health-hub-{coach,progress}.png`; Buffer `edit_post` on `6a3adf9f09a816a60cbcdfa8` updates text + assets in one call. **Portfolio deploy required** for `rawshn.com` URLs to serve new crops before Buffer fetches at publish.
+- **Skill updates:** none.
+
+## 2026-06-24 — Health Hub reschedule + copy revision (cost/skill framing)
+
+- **Triggered:** User bumped Health Hub post to Thu 25 Jun 10:05 IST and reframed copy around build cost ($20 Cursor budget, Auto mode) and standard-software skill vs exotic AI.
+- **Learned:** `edit_post` on existing scheduled ID (`6a3adf9f09a816a60cbcdfa8`) updates text + `dueAt` in one call; carry `assets` + `metadata` forward. Notion CON-165 (`3883dffe-a139-8144-958f-d32091b53da1`) `Posting on` + pipeline block updated in same turn.
+- **Skill updates:** none.
+
+## 2026-06-24 — Health Hub image post (dual screenshots)
+
+- **Triggered:** Autonomous Health Hub LinkedIn post: draft, Notion row, Buffer schedule.
+- **Learned:** Portfolio screenshots at `rawshn-portfolio/public/assets/health-hub-{coach,progress,preview}.png` are publicly served at `https://rawshn.com/assets/...` (no Drive upload needed for Buffer). Buffer `create_post` accepts multiple `image` assets for LinkedIn. `cleanup-content-library` CLI failed locally (SSL cert verify); Notion MCP cleanup still viable in Cursor. Wed 24 Jun 2026 10:00 IST slot used per strategy doc.
+- **Skill updates:** none.
+
+## 2026-06-16 — Notion Posted auto-sync fix (NOTION_CONTENT_LIBRARY_DB default)
+
+- **Triggered:** User reported Notion board never updates to Posted after Buffer publish; fix + feed engage.
+- **Learned:** `cleanup-content-library` crashed immediately when `NOTION_CONTENT_LIBRARY_DB` unset — `collect_mappings()` raised before any Buffer/Notion reconciliation. Default DB ID `753369dc15fb4b3c82dd9c88cb753c3c` (Content Library) + graceful pipeline-scan fallback fixes launchd/CLI without zshrc env. Verified: 1 row `Scheduled` → `Posted` (`3803dffe-a139-81f7-bc7d-cab7d5f463df`, Buffer `6a302dc712418296f2223ed6`).
+- **Skill updates:** `lib/notion_sync.py` default DB ID; `.env.example` documents override.
+
+## 2026-06-16 — PARA preview layout fix + re-export (carousel + infographic)
+
+- **Triggered:** User reported text/image alignment issues on PARA preview Canva carousel and infographic; re-export, Drive, Buffer, Notion refresh.
+- **Learned:** Carousel `DAHMqh_yc88`: cover title `left:92 top:360` + manual `\n` breaks; all title/body blocks `text_align:start` at `left:92` with titles `top:470` and body `top:588`; removed duplicate profile photo page 2. Infographic `DAHMqvW7-gI`: normalized section text to `left:92`, images to `left:92` / `left:700`, footer `top:2520`. Drive in-place update via `GOOGLEDRIVE_UPLOAD_UPDATE_FILE` (same IDs). Carousel `create_post` + `draftId` → Buffer `6a306771c5cca7fb316a4366` Wed 18 Jun 10:05 IST. Infographic asset refresh on `6a30645e2cefeda2a31bc304` Thu 19 Jun 10:05 IST unchanged.
+- **Skill updates:** none (re-run of existing layout rules).
+
+## 2026-06-16 — CON-163 PARA infographic Thu schedule
+
+- **Triggered:** Ensure PARA Preview infographic scheduled Thu 19 Jun 10:05 IST after prior Buffer ID deleted.
+- **Learned:** Deleted Buffer IDs return `Post not found`; reschedule from existing draft via `edit_post` with `mode: customScheduled`, `dueAt`, and **`saveToDraft: false`** (without it, post keeps `draft` status despite `dueAt`). CON-163 draft `6a30645e2cefeda2a31bc304` → scheduled Thu 19 Jun 2026 10:05 IST · Drive PNG `1A66W1_1TCum5mjtl0_VJXRqt_hsZcwnW` · Notion `3803dffe-a139-81ac-963c-cc3d099c5e3a` → **Scheduled**.
+- **Skill updates:** none.
+
+## 2026-06-16 — Content Type tagging + calendar swap policy (no delete)
+
+- **Triggered:** User flagged Paperclip image post mis-tagged as carousel in Notion; asked to demote bumped posts instead of deleting.
+- **Learned:** Notion `Content Type` must follow primary Buffer **asset** (`image` → `4. Image`, PDF `document` → `2. Carousel`), not Buffer `metadata.type` (single-image posts often still say `carousel`). Calendar swap: **new** Content Library row per new post; bumped rows → Notion **Ready** + Buffer `create_post`/`edit_post` with `saveToDraft: true`; avoid `delete_post` unless user explicitly discards. Restored CON-162/163 as Ready with drafts `6a30645a4b32b4b3c4018d7b` / `6a30645e2cefeda2a31bc304`; Paperclip on CON-164 (`3803dffe-a139-81c1-a5d8-cfed1c8895e7`, `4. Image`).
+- **Skill updates:** `SKILL.md` § Content Type table + Calendar swaps (do not delete planned posts).
+
+## 2026-06-16 — Paperclip screenshot replaces Wed slot; Fri PARA infographic cancelled
+
+- **Triggered:** User screenshot of Paperclip/Projekt Rawshn dashboard; schedule Paperclip OSS post Wed with image; cancel Fri PARA infographic.
+- **Learned:** `edit_post` on existing Buffer ID swaps PDF carousel → single image + new caption + `dueAt` in one call. Fri delete via `delete_post` (`6a304aa2d677f2362ccfcb63`). Drive upload to `Content & Media` folder `1VZ2ksX8UtBJb0O3RI68NBOLsQMHRWrCq` + `CREATE_PERMISSION` anyone/reader → Buffer `uc?export=download&id=`. Repurposed Notion CON-162 row (`3803dffe-a139-814d-bbad-f81d8190f548`); CON-163 → Rejected. Buffer `6a304a9b64a5ec97de565333` Wed 17 Jun 2026 10:05 IST · Drive `1pjXnVBrlCoTFRhPESgmCk-g-PwtNkydv`.
+- **Skill updates:** none (workflow execution).
+
+## 2026-06-16 — PARA preview carousel + infographic scheduled (Wed/Thu)
+
+- **Triggered:** Full pipeline: Wed 8-slide carousel + Thu infographic for PARA dashboard preview; Notion + Buffer + Canva + Drive.
+- **Learned:** AI-generated infographic (`generate-design` → `create-design-from-candidate`) blocks `export-design` until `copy-design` + optional `resize-design` (custom 1080×2700); edit via `start-editing-transaction` works on original ID. Carousel `copy-design` with `page_numbers` [1–8] may still return 12 pages — export with `format.pages: [1..8]`. Cover title overlap: reposition to `top:360` after long hooks. Buffer slots Wed/Thu 10:05 IST match channel schedule. Carousel `DAHMqh_yc88` · Drive PDF `1rExBZ8rgoSNDMkVXj0f_LSdN_qKhmnQj` · Buffer `6a304a9b64a5ec97de565333` · Notion `3803dffe-a139-814d-bbad-f81d8190f548`. Infographic `DAHMqvW7-gI` · Drive PNG `1A66W1_1TCum5mjtl0_VJXRqt_hsZcwnW` · Buffer `6a304aa2d677f2362ccfcb63` · Notion `3803dffe-a139-81ac-963c-cc3d099c5e3a`.
+- **Skill updates:** none (workflow execution).
+
+## 2026-06-15 — PARA preview posts (India market + persona bridge)
+
+- **Triggered:** Deep research task: Wed carousel + Thu infographic previewing PARA dashboard for business leaders/freelancers; audience-building, no hard sell.
+- **Learned:** India productivity/PKM is a paradox market (high app downloads, WhatsApp as de facto OS, horizontal note-taking crowded by Notion/Zoho; vertical/outcome SaaS wins). Honest “small market” framing works as builder credibility, not defeatism. Persona bridge: frame as **PM building personal OS** (strategy pillar 2: AI-assisted workflows), not productivity guru. Pair formats: carousel = market honesty + why PARA + build preview; infographic = framework/decision tree (different angle, saveable). India callout: observational stats (founder profiles +104% YoY, freelancers ~₹1,200/mo SaaS stack) not lecturing. No em/en dash clause separators in post/slide copy. Soft CTA: “what do you actually use?” + optional waitlist/DM, no pricing.
+- **Skill updates:** none (research deliverable; patterns reusable for future PARA-preview content).
+
+## 2026-06-15 — Manual Canva edit re-export (CON-161, 11 slides)
+
+- **Triggered:** User manually updated Canva MCP carousel; asked to complete pipeline + schedule for tomorrow.
+- **Learned:** After manual Canva edits, re-check `get-design-pages` (count may grow; CON-161 went 10→11 with follow CTA on page 11). Export all content pages. Pre-flight page 1 title still matched Notion Name. Drive v4: `1wM0DRYirpJXb2yWn469ZX04uSmPYzAn3`. Buffer `6a302dc712418296f2223ed6` document asset refreshed; dueAt unchanged Tue 16 Jun 2026 10:05 IST.
+- **Skill updates:** none (workflow re-run).
+
+## 2026-06-15 — Cover hook line breaks + left-align fix
+
+- **Triggered:** User screenshot: justified cover headline with huge word gaps on MCP carousel ("Try in Agentic"); re-export + Buffer refresh.
+- **Learned:** Cover needs manual `\n` in `replace_text` plus `format_text` `text_align: start` on all title/body blocks pages 1–10. MCP cover: `7 MCPs PMs\nShould Try in\nAgentic Workflows`. Open-source: `7 Open Source Tools\nEvery PM Should Try\nin 2026`. Template `DAF4WMk_grY` + `DAHMqHX1_ms` + `DAHMqNt-qds` committed. Drive v3 MCP: `19juEjyvh3ZnwBnstWjaf7Uc4u24ZzXfa`. Buffer `6a302dc712418296f2223ed6` document asset updated. Notion `3803dffe-a139-81f7-bc7d-cab7d5f463df`.
+- **Skill updates:** `SKILL.md` § Carousel — cover hook line-break row + checklist.
+
+## 2026-06-15 — Carousel text_align start refresh (MCP + open-source)
+
+- **Triggered:** User reported justified body text still looked bad on scheduled MCP carousel; re-export both decks.
+- **Learned:** `format_text` `text_align: start` on 19 body/title elements per deck (pages 1–10; skip name/handle/©). Drive v3: MCP `10qocxMwPBcHCcNN6Xul-1LVCNq1TpBcO` · open-source `1udbcq-cKmqVSMwr0tFPNOYJpl3cpIp33`. Buffer `6a302dc712418296f2223ed6` document asset → MCP v3. Notion MCP + open-source pages updated.
+- **Skill updates:** none (re-run of existing layout rule).
+
+## 2026-06-15 — Carousel layout: left-align + copyright footer
+
+- **Triggered:** User asked for left-aligned carousel body text (not justified) and `© 2026 Roshan Raj Mishra` footer on branded template + live decks.
+- **Learned:** Canva MCP: repurpose `@rawshn` text element → copyright at `top:1010, left:92`; merge `@rawshn` into name element. Template `DAF4WMk_grY` committed. MCP `DAHMqHX1_ms` + open-source `DAHMqNt-qds` pages 1–10 updated. Drive v2: MCP `1mjg5J8NFACE4l6hzXihgsOlC7G3dTyUE` · open-source `1Y8cQ3RJ97hVvLqenbNahWFKR0C8lnu1P`. Buffer `6a302dc712418296f2223ed6` document asset refreshed.
+- **Skill updates:** `SKILL.md` § Carousel creation — layout & copy rules table (left-align, copyright, branding, no-dash copy).
+
+## 2026-06-15 — MCP agentic workflows carousel (replaced open-source post)
+
+- **Triggered:** User cancelled open-source carousel; wanted **7 MCPs PMs Should Try in Agentic Workflows** instead.
+- **Learned:** Deleted Buffer `6a302ce02fea4bc95eb07849` · new Buffer `6a302dc712418296f2223ed6` · Drive `1mbYo2NYJKIaMMv5CVa_oc55_x4HEtJMN` · Canva `DAHMqHX1_ms` · Notion `3803dffe-a139-81f7-bc7d-cab7d5f463df`.
+- **Skill updates:** none (workflow execution).
+
+## 2026-06-15 — Open source PM carousel (Buffer Tue 10:05 IST)
+
+- **Triggered:** User asked to schedule a PM carousel about open source projects for tomorrow via Buffer.
+- **Learned:** Canva copy `DAHMqNt-qds` from Full-Stack PM template · 10 slides · Drive `1ceK3cSMSriKw5vUj55u4IK2e09lWeGtU` · Buffer `6a302ce02fea4bc95eb07849` · Notion `3803dffe-a139-81ff-b0a0-e2d096a1d063`.
+- **Skill updates:** none (workflow execution).
+
 ## 2026-06-03 — Docs/paths polish (Projects root, cleanup CLI)
 
 - **Triggered:** User asked to apply optional repo polish after cleanup + NOTION_TOKEN setup.

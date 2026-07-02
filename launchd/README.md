@@ -12,7 +12,7 @@ The installer substitutes `@REPO_ROOT@` and `@HOME@` in the template and copies 
 
 1. `cleanup-content-library` — Buffer `sent` → Notion **Posted**
 2. `golden_hour watch` — auto-replies on comments on **your** post
-3. `feed_engage_trigger` — arms feed comments when Buffer marks post `sent`
+3. `feed_engage_daemon.py` — hands-off CLI feed comments (linkedincli + Groq)
 
 ## Deprecated — do not install
 

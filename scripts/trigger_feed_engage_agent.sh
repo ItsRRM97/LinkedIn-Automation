@@ -1,5 +1,9 @@
 #!/bin/bash
-# Optional: launch local Cursor agent for feed engage when CURSOR_API_KEY + cursor_sdk exist.
+# Feed engage agent launch — prefers main Cursor chat over SDK subagent.
+#
+# Default: agent_prompt.txt + macOS notification only (user resumes in main chat).
+# Optional: CURSOR_API_KEY + cursor-sdk launches a local agent (may lack browser tabs).
+# Set FEED_ENGAGE_SDK_LAUNCH=1 to enable SDK path when API key is present.
 set -euo pipefail
 
 # shellcheck source=lib.sh
@@ -15,13 +19,17 @@ if [[ ! -f "$ARMED" ]]; then
   exit 0
 fi
 
-if [[ -f "$HOME/.zshrc" ]]; then
-  # shellcheck disable=SC1090
-  source "$HOME/.zshrc"
-fi
+# shellcheck source=load_launch_env.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/load_launch_env.sh"
+load_launch_env
 
 if [[ -z "${CURSOR_API_KEY:-}" ]]; then
-  echo "[$(date -Iseconds)] CURSOR_API_KEY not set — skipping SDK agent launch (use Cursor + armed prompt file)" >>"$LOG"
+  echo "[$(date -Iseconds)] CURSOR_API_KEY not set — main-agent prompt only ($PROMPT_FILE)" >>"$LOG"
+  exit 0
+fi
+
+if [[ "${FEED_ENGAGE_SDK_LAUNCH:-0}" != "1" ]]; then
+  echo "[$(date -Iseconds)] FEED_ENGAGE_SDK_LAUNCH not set — main-agent prompt only (browser MCP needs main chat)" >>"$LOG"
   exit 0
 fi
 

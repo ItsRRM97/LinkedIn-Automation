@@ -1,0 +1,10 @@
+# LinkedIn feed engage: main agent only
+
+When running or resuming `linkedin-feed-engage`:
+
+1. **Do not** delegate to Task tool / background subagents — `cursor-ide-browser` tabs are not shared; subagents get empty `browser_tabs` and fail silently.
+2. **Run in the user's main Cursor agent chat** that has Browser MCP enabled and LinkedIn logged in.
+3. **Config:** `linkedin-feed-engage/config.json` → `single_agent_only: true` — one agent, one browser lock, until session `status: completed`.
+4. **If blocked:** session JSON `status: blocked` + `blocked_reason: browser_tabs_empty` — user resumes in main chat after logging into linkedin.com/feed/ in Cursor browser.
+
+Canonical detail: `linkedin-feed-engage/SKILL.md` → Browser MCP scope.

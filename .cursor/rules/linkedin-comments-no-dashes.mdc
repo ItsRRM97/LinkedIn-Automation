@@ -1,0 +1,19 @@
+---
+description: LinkedIn comment drafts must not use dashes as clause separators
+alwaysApply: true
+---
+
+# LinkedIn comments: no dashes
+
+When drafting LinkedIn comments in this repo (feed engage, golden hour, proactive comments):
+
+- Do **not** use em dash (—), en dash (–), or hyphen as a clause separator in the comment **body**.
+- Use periods, commas, or colons between ideas instead.
+- `@Name` mention chip at the start is fine; only the body after the tag must follow this rule.
+- Hyphens inside compound words or quoted terms (e.g. `build-to-learn`, `AI-heavy`) are OK.
+
+**Bad:** `framing EQ as what AI can't replicate — where does that gap show up`
+
+**Good:** `framing EQ as what AI can't replicate. Where does that gap show up`
+
+Canonical detail: `linkedin-feed-engage/SKILL.md` §4.

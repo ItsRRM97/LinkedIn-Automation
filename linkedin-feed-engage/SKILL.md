@@ -1,19 +1,53 @@
 ---
 name: linkedin-feed-engage
 description: >-
-  Proactive LinkedIn feed comments via Cursor browser MCP. Default targeting: 50 curated PM
-  thought leaders (real humans, not company pages); skip promotion/success-story posts.
-  Depth Score comments with verified @mentions. Home feed is fallback only. Use for feed
-  engagement or publish-day companion sessions (not golden-hour replies on your posts).
+  Proactive LinkedIn feed comments via Cursor browser MCP. Default: home feed Top (PM/builder
+  posts strictly under 8h old); thought-leader roster is fallback only. Skip promotion/success-
+  story posts. Depth Score comments with verified @mentions. Use for feed engagement or publish-
+  day companion sessions (not golden-hour replies on your posts).
 ---
 
 # LinkedIn Feed Engage (Cursor browser)
 
 Changelog: [`SKILL_CHANGELOG.md`](SKILL_CHANGELOG.md) · Config: [`config.json`](config.json) · Roster: [`thought_leaders.json`](thought_leaders.json)
 
-**Goal:** Substantive comments on **real PM thought leaders’** posts (see roster), **one uninterrupted run** when executing — no “keep going” prompts, no mid-session subagents. Default session size remains **30** (`target_comments`); user may set **50** for a full-roster pass. **Not** golden-hour replies on your own posts — see [`linkedin-golden-hour`](../linkedin-golden-hour/SKILL.md).
+**Goal:** Substantive comments on **fresh PM/builder posts** (home feed first; 15-leader roster fallback), **one uninterrupted run** when executing — no “keep going” prompts, no mid-session subagents. Default session size remains **30** (`target_comments`). **Not** golden-hour replies on your own posts — see [`linkedin-golden-hour`](../linkedin-golden-hour/SKILL.md).
 
 **Tool:** `cursor-ide-browser` MCP only (no Playwright in Phase 1).
+
+## Browser MCP scope (mandatory — read before any session)
+
+`cursor-ide-browser` tabs are **scoped to the Cursor agent context** that created or last interacted with them. **Background Task subagents do not inherit the parent agent's browser tabs** — `browser_tabs` list often returns empty even when the main chat has 8+ LinkedIn tabs open.
+
+| Context | Browser tabs | Feed engage |
+|---------|--------------|-------------|
+| **Main Cursor agent** (user chat) | Sees user's LinkedIn tabs | **Run here** |
+| **Task / background subagent** | Usually empty; prior `browser_view_id` invalid | **Do not delegate** |
+| **cursor-sdk `Agent.prompt`** | Separate local agent — same isolation risk | Use only if verified; prefer main chat |
+
+**Coordinator rules (`single_agent_only: true` in config):**
+
+1. **Never** use the Task tool to spawn feed engage — it will silently fail or block on empty `browser_tabs`.
+2. **Never** hand off mid-session to a subagent — one main agent, one browser lock, until `status: completed`.
+3. Publish-day trigger writes `state/agent_prompt.txt` — user or main agent pastes/resumes in **the same chat** that has browser MCP, not a subagent.
+
+**If `browser_tabs` list is empty at session start:**
+
+1. In **main agent only**: try `browser_tabs` action **`new`**, then `browser_navigate` to `https://www.linkedin.com/feed/` (omit `viewId` on navigate right after `new`).
+2. In **Task subagent**: `browser_tabs` `new` may return a `viewId` but `browser_navigate` often still fails ("No browser tab available") — treat as blocked immediately; do not retry.
+3. If navigate fails → set session `status: blocked` (below) and **stop**. User logs into LinkedIn in Cursor browser from **main agent** chat, then resumes.
+
+**Blocked session JSON** (write when browser unavailable):
+
+```json
+{
+  "status": "blocked",
+  "blocked_reason": "browser_tabs_empty",
+  "blocked_message": "cursor-ide-browser has no tab in this agent context. Run feed engage in main Cursor chat (not Task subagent). Log into linkedin.com/feed/ in Cursor browser, then resume.",
+  "blocked_at": "<ISO>",
+  "resume_hint": "Main agent only — paste state/agent_prompt.txt or say resume feed engage"
+}
+```
 
 ## Continuous run rules (mandatory for 30/30)
 
@@ -41,7 +75,7 @@ After sign-in, confirm feed loads: https://www.linkedin.com/feed/
 1. **Cursor browser MCP** (`cursor-ide-browser`) — user logged into LinkedIn in browser tab.
 2. **Notion MCP** — load persona + strategy before drafting (same as content posting).
 3. **Config** — [`config.json`](config.json) (`target_mode`, `target_comments`, delays, skip rules).
-4. **Thought leaders** — [`thought_leaders.json`](thought_leaders.json) when `target_mode` is `thought_leaders` (default).
+4. **Thought leaders** — [`thought_leaders.json`](thought_leaders.json) when home feed is dry (`target_mode: home_feed`, default). Roster excludes leaders with no post in **>5 days** (`roster_prune_if_no_post_days`).
 
 ```text
 notion-fetch: 36f3dffe-a139-8195-9dac-f3b5a76003b7   # strategy
@@ -56,7 +90,7 @@ Pair with [`linkedin-content-posting`](../linkedin-content-posting/SKILL.md) for
 |---------|-------------------------|
 | Duration | **30 min** (`session_minutes`) |
 | Target comments | 30 |
-| Max post age | **≤12 hours** (hard skip older) |
+| Max post age | **Strictly &lt;8 hours** (`max_post_age_hours: 8`, `max_post_age_strict: true`) — skip `8h`, `1d`, `2d`, etc. |
 | Delay between posts | **45–60 s** (`min_delay_seconds` / `max_delay_seconds`) |
 | Feed refresh | **Scroll `main` each pick** — full reload only every 8 picks or when dry |
 | Continuous mode | **Yes** — single agent until `posted >= target`; no batch stops |
@@ -65,9 +99,15 @@ Pair with [`linkedin-content-posting`](../linkedin-content-posting/SKILL.md) for
 
 ## Browser workflow (agent loop)
 
-**Order:** `browser_tabs` list → `browser_navigate` feed → `browser_lock` → loop → `browser_lock` unlock.
+**Order:** `browser_tabs` list → (if empty: `browser_tabs` **new**) → `browser_navigate` feed → `browser_lock` → loop → `browser_lock` unlock.
 
 ### 0. Start session
+
+**Browser guard (before any LinkedIn URL):**
+
+1. `browser_tabs` action `list` — if tabs exist, note `viewId` for lock/navigate.
+2. If list empty → `browser_tabs` action `new` → `browser_navigate` `https://www.linkedin.com/feed/`.
+3. If navigate fails with "No browser tab available" → write blocked session JSON (§ Browser MCP scope) and **stop** (do not delegate to Task).
 
 - Navigate `https://www.linkedin.com/feed/` (or reload if already there — see §1)
 - Confirm **Sort by: Top** (not Recent) when visible in feed controls
@@ -90,7 +130,7 @@ Pair with [`linkedin-content-posting`](../linkedin-content-posting/SKILL.md) for
 
 1. Scroll `document.querySelector('main')` to bottom (CDP `Runtime.evaluate` or `browser_scroll` on main column)
 2. Click **Load more** when visible
-3. **Full reload** only when: feed is dry (no ≤12h PM/builder cards after scroll + Load more), **or** every `full_reload_every_n_picks` (default 8)
+3. **Full reload** only when: feed is dry (no **&lt;8h** PM/builder cards after scroll + Load more), **or** every `full_reload_every_n_picks` (default 8)
 
 Confirm **Sort by: Top** after any reload.
 
@@ -114,33 +154,40 @@ Confirm **Sort by: Top** after any reload.
 
 **Prefer:** **top-level comments on distinct feed posts** — one comment per post card, then scroll for the next. Do **not** stack multiple replies on the same thread unless the user explicitly asks for thread depth.
 
-**Prefer engaged posts (post–golden-hour):** When the user wants traction, not cold outreach — skip brand-new zero-engagement posts from `Latest`. Target posts with visible reactions/comments, typically **12h–3d** old (after the author’s golden hour).
+**Prefer engaged posts:** Within the **&lt;8h** window, prefer cards with visible reactions/comments over zero-engagement posts.
 
-**Discovery (default — `target_mode: thought_leaders`):** Work the **50-person roster** in [`thought_leaders.json`](thought_leaders.json). One comment per leader per session (track `author` in session JSON). Do **not** comment on company/media pages.
+**Discovery (default — `target_mode: home_feed`):** `https://www.linkedin.com/feed/` with **Sort by: Top**. Scroll `main`, **Load more**, snapshot cards. Pick PM/builder posts **strictly under 8 hours** (`7h`, `6h`, `45m` — not `8h` or `1d`). One comment per post card; track authors in session JSON.
 
-**Discovery (fallback):** Home feed Top or `discovery_urls.content_search_past_week` only when a leader has no eligible post ≤ `max_post_age_hours` after checking their activity page.
+**Discovery (fallback — thought leaders):** When home feed is dry after scroll + Load more (+ optional content search), work [`thought_leaders.json`](thought_leaders.json). One comment per leader per session. Roster is pre-pruned: drop anyone whose newest original post is **older than 5 days** (`roster_prune_if_no_post_days`).
 
-### 3a. Thought-leader targeting (default)
+**Age parse (strict):** `45m`, `2h`, `7h` → eligible. `8h`, `9h`, `1d`, `2d`, `1w` → **skip**. When ambiguous, CDP `innerText` on post #1 and err skip.
+
+### 3a. Thought-leader targeting (fallback)
 
 | Rule | Action |
 |------|--------|
 | **Real humans only** | Author must be a person (`/in/{slug}`), with a personal headline on the card. **Skip** company pages, newsletters, and “Follow {Brand}” cards (`skip_company_pages`, `company_page_signals` in config). |
 | **Roster order** | Load `thought_leaders.json` → pick next leader not in session `comments[]` → open `https://www.linkedin.com/in/{slug}/recent-activity/all/` (config `discovery_urls.thought_leader_activity`). |
-| **Post pick** | Newest **original** post ≤ `max_post_age_hours` with PM/builder substance (`niche_keywords`). Prefer posts with reactions/comments (`prefer_engaged_posts`). |
+| **Post pick** | Newest **original** post **strictly &lt;** `max_post_age_hours` (8) with PM/builder substance (`niche_keywords`). Prefer posts with reactions/comments (`prefer_engaged_posts`). |
+| **Roster hygiene** | Remove from `thought_leaders.json` any leader whose newest original post is **&gt;5 days** old; log pruned names in changelog. Re-add when they post again. |
 | **Hard skip — success stories** | No comments on promotions, new roles, anniversaries, certifications, open-to-work celebrations, or generic “excited to announce” posts (`skip_success_story_posts` + `skip_keywords` in config). Scroll to their next post or skip leader and log `skipped`. |
 | **Mention** | `@` + listbox select → verify `[data-type="mention"]` chip (required for people). |
 | **Questions** | Do **not** aim every closing question at the thought leader — mix targets (§4). |
-| **Session target 50** | When user asks for full roster: set `target: 50` in session JSON; one leader = one comment max. |
+| **Session target 15** | Roster cap is 15 (`thought_leader_count`); one leader = one comment max per session. |
 
-**The 50 (display names)** — slugs in JSON:
+**The 15 (display names)** — slugs + audit ages in JSON:
 
-Marty Cagan · Teresa Torres · Lenny Rachitsky · Shreyas Doshi · Gibson Biddle · April Dunford · Melissa Perri · John Cutler · Janna Bastow · Roman Pichler · Nikhyl Singhal · Scott Belsky · Jeff Patton · Brian Balfour · Rich Mironov · Jackie Bavaro · Deb Liu · Elena Verna · Casey Winters · Fareed Mosavat · Hiten Shah · Wes Kao · Ravi Mehta · Ken Norton · Martin Eriksson · Todd Olson · Julie Zhuo · Rahul Vohra · Paul Adams · Anna Marie Clifton · Heidi Helfand · Tim Herbig · Matt LeMay · Jeff Gothelf · Dan Olsen · Christina Wodtke · Sachin Rekhi · Cindy Alvarez · Ant Murphy · Noah Weiss · Lane Shackleton · Andrew Chen · Petra Wille · Josh Porter · Aakash Gupta · Itamar Gilad · Giff Constable · Shishir Mehrotra · David Cancel · Hunter Walk
+John Cutler · Hiten Shah · Melissa Perri · Roman Pichler · Aakash Gupta · Paul Adams · Elena Verna · Janna Bastow · Scott Belsky · Lenny Rachitsky · Itamar Gilad · Sachin Rekhi · Fareed Mosavat · April Dunford · Nikhyl Singhal
 
 **Do not run** a engage session unless the user explicitly asks (skill/config updates alone are not a trigger).
 
-### 3b. Home feed (fallback only)
+### 3b. Home feed (default)
 
-`https://www.linkedin.com/feed/` with **Sort by: Top** when thought-leader activity is dry. Same skip rules: **no company pages**, **no success-story posts**.
+`https://www.linkedin.com/feed/` with **Sort by: Top**. Same skip rules: **no company pages**, **no success-story posts**, **strict &lt;8h age**.
+
+### 3c. Roster maintenance
+
+When auditing or ending a session, if a roster leader’s newest original post is **&gt;5 days** ago, **remove** them from [`thought_leaders.json`](thought_leaders.json) and note in [`SKILL_CHANGELOG.md`](SKILL_CHANGELOG.md). Wrong-profile slugs (`hwalker`, `noahweiss`) remove or fix slug before re-add.
 
 ### 3. Open comment box
 
@@ -160,7 +207,21 @@ On selected post card:
 4. Optional: one sentence experience — only if it **directly illustrates the cited claim** (not a tangent onto your own post topic)
 5. Open question — **target varies** (see below); must be answerable only given **this** post/thread
 
-**Chat draft format:** show as `@Ayush Muniya — …` for your planning, but the browser must contain a real mention chip before submit (see §5).
+**Chat draft format:** show as `@Ayush Muniya` then the body for planning; the browser must contain a real mention chip before submit (see §5). The `@Name` chip line is fine; everything after it is the **body** and must follow punctuation rules below.
+
+#### No dashes in comments (mandatory — current + future comments)
+
+Do **not** use em dash (—), en dash (–), or hyphen as a clause separator in the comment **body**. Use periods, commas, or colons instead. Hyphens inside compound words or names (e.g. `build-to-learn`, `AI-heavy`) are OK.
+
+| OK | Not OK |
+|----|--------|
+| `@Name` mention chip at the start | Em/en dash between clauses in the body |
+| Hyphens in quoted terms or compound adjectives | `…replicate — where does that gap…` |
+| Period, comma, or colon between ideas | `…lands hard — I've seen…` |
+
+**Bad:** `framing EQ as what AI can't replicate — where does that gap show up`
+
+**Good:** `framing EQ as what AI can't replicate. Where does that gap show up`
 
 #### Post relevance (mandatory — current + future comments)
 
@@ -253,9 +314,10 @@ Read delays from `config.json` (default **45–60 s** jitter between submits).
 
 ## Comment quality bar
 
-Same as [`proactive-comments-plan.md`](../linkedin-content-posting/proactive-comments-plan.md) plus §4 **Post relevance**:
+Same as [`proactive-comments-plan.md`](../linkedin-content-posting/proactive-comments-plan.md) plus §4 **Post relevance** and **No dashes**:
 
 - No “Great post!” / “Thanks for sharing!”
+- No em dash, en dash, or hyphen as clause separators in the comment body (§4)
 - No links, hashtags stacks, DM CTAs
 - **See more** expanded; part 2 cites a **specific** phrase/claim from the full post (or commenter line)
 - Insight + question tied to **that** claim — not generic PM platitudes or your publish-day topic
@@ -266,9 +328,10 @@ Same as [`proactive-comments-plan.md`](../linkedin-content-posting/proactive-com
 
 Before every submit, confirm ALL of:
 
-- [ ] Post age ≤ `max_post_age_hours` (or skip)
+- [ ] Post age **strictly &lt;** `max_post_age_hours` (8h exactly = skip)
 - [ ] **See more** clicked when truncated; full post read
 - [ ] Part 2 names a **specific** phrase/claim from the post (`post_snippet_referenced` ready for JSON)
+- [ ] Comment body has **no** em dash, en dash, or hyphen used as clause separators (§4)
 - [ ] Pre-submit relevance test passed (not interchangeable with another post)
 - [ ] Feed refreshed since previous pick
 - [ ] Editor has `[data-type="mention"]` for post author
@@ -277,15 +340,15 @@ Before every submit, confirm ALL of:
 
 ## Examples
 
-**"Run feed engagement 30/30"** → Thought-leader mode: roster loop, human posts only, skip success stories → auto-post without stopping.
+**"Run feed engagement 30/30"** → Home feed Top first; posts **&lt;8h** only; roster fallback when dry; auto-post without stopping.
 
-**"Comment on the 50 PM leaders"** → `target: 50` in session; one comment per roster name; same skip rules.
+**"Comment on the PM leader roster"** → Roster fallback (15 active); still **&lt;8h** posts only; re-audit roster when dry.
 
 **"5 comment warmup"** → `target_comments: 5`; first five roster leaders with eligible posts.
 
 **"Update skill only"** → Edit SKILL/config/roster; **do not** open browser or post.
 
-**"I'm logged in, go"** → Start thought-leader discovery (activity pages), not generic feed spam.
+**"I'm logged in, go"** → Start on home feed Top; scroll for **&lt;8h** PM cards before opening roster activity pages.
 
 ## Security
 
@@ -314,7 +377,9 @@ Each **10 min × 90 min** tick (Tue–Thu 10:00 local):
 | LinkedIn logged in at `/feed/` | Comment UI |
 | Optional: `CURSOR_API_KEY` + `pip install cursor-sdk` | Zero-click agent launch via `trigger_feed_engage_agent.sh` |
 
-**Manual fallback:** When notification fires, paste prompt from `state/agent_prompt.txt` into Cursor agent.
+**Manual fallback:** When notification fires, paste prompt from `state/agent_prompt.txt` into **main Cursor agent chat** (not Task subagent).
+
+**SDK launch:** `scripts/trigger_feed_engage_agent.sh` writes `agent_prompt.txt` by default. Set `FEED_ENGAGE_SDK_LAUNCH=1` + `CURSOR_API_KEY` only if you accept SDK agent may lack browser tabs; prefer main chat.
 
 **Fully unattended** (no Cursor open) = Phase 2 Playwright — see [`proactive-comments-plan.md`](../linkedin-content-posting/proactive-comments-plan.md).
 

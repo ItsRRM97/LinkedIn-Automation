@@ -34,3 +34,4 @@ linkedin-golden-hour/config.json
 linkedin-feed-engage/state/*
 !linkedin-feed-engage/state/.gitkeep
 !linkedin-feed-engage/state/session.example.json
+.gstack/
