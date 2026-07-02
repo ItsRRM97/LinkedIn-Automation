@@ -26,7 +26,12 @@ warnings=()
 provider=$(python3 -c "import json; c=json.load(open('$CONFIG')); print((c.get('llm') or {}).get('provider','groq'))" 2>/dev/null || echo groq)
 
 if [[ "$provider" == "groq" ]] && [[ -z "${GROQ_API_KEY:-}" ]]; then
-  missing+=(GROQ_API_KEY)
+  if [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
+    provider=openrouter
+    warnings+=(GROQ_API_KEY_missing_using_openrouter)
+  else
+    missing+=(GROQ_API_KEY)
+  fi
 fi
 if [[ "$provider" == "openrouter" ]] && [[ -z "${OPENROUTER_API_KEY:-}" ]]; then
   missing+=(OPENROUTER_API_KEY)

@@ -27,7 +27,7 @@ if str(LIB_DIR) not in sys.path:
 from feed_buffer_windows import discover_active_engagement_posts  # noqa: E402
 from feed_discover import discover_feed_items  # noqa: E402
 from feed_post_classify import classify_post, rank_key  # noqa: E402
-from feed_llm import LLMError, draft_comment  # noqa: E402
+from feed_llm import LLMError, draft_comment, resolve_llm_provider  # noqa: E402
 from feed_quota import (  # noqa: E402
     can_post,
     compute_delay_seconds,
@@ -65,7 +65,7 @@ def load_persona() -> str:
 
 
 def check_daemon_prereqs(llm_cfg: dict[str, Any]) -> str | None:
-    provider = (llm_cfg.get("provider") or os.environ.get("FEED_LLM_PROVIDER") or "groq").lower()
+    provider = resolve_llm_provider(llm_cfg)
     if provider == "groq" and not (os.environ.get("GROQ_API_KEY") or llm_cfg.get("groq_api_key")):
         return (
             "GROQ_API_KEY not set. Add export GROQ_API_KEY=gsk_... to ~/.zshrc, "
@@ -74,7 +74,7 @@ def check_daemon_prereqs(llm_cfg: dict[str, Any]) -> str | None:
     if provider == "openrouter" and not (
         os.environ.get("OPENROUTER_API_KEY") or llm_cfg.get("openrouter_api_key")
     ):
-        return "OPENROUTER_API_KEY not set (or set llm.provider=groq in config.json)"
+        return "OPENROUTER_API_KEY not set (add to ~/.zshrc or set GROQ_API_KEY for Groq)"
     if not (os.environ.get("LINKEDIN_LI_AT") or os.environ.get("LI_AT")):
         return "LINKEDIN_LI_AT not set — run bash scripts/import_linkedin_cookies.sh"
     if not (os.environ.get("LINKEDIN_JSESSIONID") or os.environ.get("JSESSIONID")):
@@ -131,6 +131,7 @@ def tick(*, dry_run: bool = False, max_comments: int | None = None, force: bool 
     if prereq_err:
         return {"status": "blocked", "blocked_reason": "env", "message": prereq_err}
 
+    llm_provider = resolve_llm_provider(llm_cfg)
     persona = load_persona()
     min_d = int(cfg.get("min_delay_seconds", 45))
     max_d = int(cfg.get("max_delay_seconds", 120))
@@ -225,6 +226,7 @@ def tick(*, dry_run: bool = False, max_comments: int | None = None, force: bool 
 
     return {
         "status": "ok",
+        "llm_provider": llm_provider,
         "active_buffer_posts": len(windows),
         "posted_today": quota.get("posted", 0),
         "daily_cap": daily_cap,

@@ -18,6 +18,16 @@ class LLMError(RuntimeError):
     pass
 
 
+def resolve_llm_provider(llm_cfg: dict[str, Any] | None = None) -> str:
+    """Use configured provider; fall back to OpenRouter when Groq key is missing."""
+    llm_cfg = llm_cfg or {}
+    provider = (llm_cfg.get("provider") or os.environ.get("FEED_LLM_PROVIDER") or "groq").lower()
+    if provider == "groq" and not (os.environ.get("GROQ_API_KEY") or llm_cfg.get("groq_api_key")):
+        if os.environ.get("OPENROUTER_API_KEY") or llm_cfg.get("openrouter_api_key"):
+            return "openrouter"
+    return provider
+
+
 def _post_json(url: str, headers: dict[str, str], payload: dict[str, Any], timeout: int = 60) -> dict[str, Any]:
     from http_ssl import ssl_context
 
@@ -134,7 +144,7 @@ def draft_comment(
 ) -> str:
     rules = rules or {}
     llm_cfg = llm_cfg or {}
-    provider = (llm_cfg.get("provider") or os.environ.get("FEED_LLM_PROVIDER") or "groq").lower()
+    provider = resolve_llm_provider(llm_cfg)
     user_block = json.dumps(
         {
             "author": post.get("author") or post.get("author_name"),
